@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>HRMS Global | Authentication</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts & Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@300,0,0,24&display=swap" rel="stylesheet"/>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#1E40AF', // Blue 800
+                        secondary: '#2563EB', // Blue 600
+                        accent: '#10B981', // Emerald 500
+                        background: '#F8FAFC',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS for Animations & UI -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        .bg-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .input-group { position: relative; }
+        .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; font-size: 20px; }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; cursor: pointer; transition: color 0.2s; font-size: 20px; }
+        .toggle-password:hover { color: #475569; }
+
+        .form-input {
+            width: 100%;
+            padding: 0.625rem 1rem 0.625rem 2.5rem;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            color: #1e293b;
+            font-size: 0.875rem; /* text-sm */
+            transition: all 0.2s ease-in-out;
+        }
+        .form-input::placeholder { color: #cbd5e1; }
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background-color: #ffffff;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* View Switching Animations */
+        .view-section {
+            display: none;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .view-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-secondary selection:text-white">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-6 right-6 transform translate-x-full opacity-0 transition-all duration-300 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm">
+        <span class="material-symbols-outlined" id="toast-icon">info</span>
+        <span id="toast-message">Message</span>
+    </div>
+
+    <!-- Main Card Container -->
+    <div class="bg-white w-full max-w-[1200px] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-hidden flex flex-col lg:flex-row min-h-[750px] relative">
+        
+        <!-- ========================================== -->
+        <!-- LEFT SIDE - Branding & Info                -->
+        <!-- ========================================== -->
+        <div class="hidden lg:flex lg:w-5/12 bg-primary relative p-12 flex-col justify-between overflow-hidden">
+            <!-- Background effects -->
+            <div class="absolute inset-0 bg-pattern z-0"></div>
+            <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-50 z-0"></div>
+            <div class="absolute bottom-10 -right-20 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 z-0"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="w-10 h-10 rounded-xl bg-white text-primary flex items-center justify-center shadow-lg">
+                        <span class="material-symbols-outlined">corporate_fare</span>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-white uppercase tracking-wider">HRMS Global</span>
+                </div>
+
+                <h1 class="text-4xl xl:text-5xl font-bold text-white leading-tight mb-6">
+                    Manage Your <br/><span class="text-blue-300">Workforce Smarter</span>
+                </h1>
+                <p class="text-blue-100 text-lg leading-relaxed mb-10 max-w-md">
+                    Streamline employee management, attendance, payroll, leave management, and HR operations through one secure platform.
+                </p>
+
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3 text-blue-50">
+                        <span class="material-symbols-outlined text-accent text-[20px]">check_circle</span>
+                        <span class="font-medium text-sm">Employee Management</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-blue-50">
+                        <span class="material-symbols-outlined text-accent text-[20px]">check_circle</span>
+                        <span class="font-medium text-sm">Attendance Tracking</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-blue-50">
+                        <span class="material-symbols-outlined text-accent text-[20px]">check_circle</span>
+                        <span class="font-medium text-sm">Payroll Management</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-blue-50">
+                        <span class="material-symbols-outlined text-accent text-[20px]">check_circle</span>
+                        <span class="font-medium text-sm">Leave Approval</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-blue-50">
+                        <span class="material-symbols-outlined text-accent text-[20px]">check_circle</span>
+                        <span class="font-medium text-sm">Secure Authentication</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative z-10 mt-12 pt-8 border-t border-white/20">
+                <p class="text-blue-200 text-xs">© 2026 HRMS Global. Enterprise Edition.</p>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- RIGHT SIDE - Authentication Forms          -->
+        <!-- ========================================== -->
+        <div class="w-full lg:w-7/12 p-6 sm:p-10 lg:p-12 xl:p-16 relative flex flex-col bg-white">
+            
+            <!-- View Toggle Tabs -->
+            <div id="tabs-container" class="self-end inline-flex bg-slate-100 p-1 rounded-lg mb-8 lg:absolute lg:top-8 lg:right-8 lg:mb-0 z-20">
+                <button onclick="switchView('login')" id="tab-login" class="px-5 py-2 text-sm font-semibold rounded-md transition-all bg-white text-primary shadow-sm">Login</button>
+                <button onclick="switchView('register')" id="tab-register" class="px-5 py-2 text-sm font-semibold rounded-md transition-all text-slate-500 hover:text-slate-700">Register</button>
+            </div>
+
+            <div class="flex-grow flex flex-col justify-center max-w-[500px] mx-auto w-full mt-4 lg:mt-12">
+                
+                <!-- LOGIN VIEW -->
+                <div id="view-login" class="view-section active w-full">
+                    <div class="text-center md:text-left mb-8">
+                        <h2 class="text-3xl font-bold text-slate-900">Welcome Back</h2>
+                        <p class="text-slate-500 mt-2 text-sm">Sign in to continue to your HRMS dashboard.</p>
+                    </div>
+
+                    <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Official Email</label>
+                            <div class="input-group">
+                                <span class="material-symbols-outlined input-icon">mail</span>
+                                <input type="email" id="loginEmail" required class="form-input" placeholder="Enter your official email" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+                            <div class="input-group">
+                                <span class="material-symbols-outlined input-icon">lock</span>
+                                <input type="password" id="loginPassword" required class="form-input pr-10" placeholder="Enter your password" />
+                                <span class="material-symbols-outlined toggle-password" onclick="togglePassword('loginPassword', this)">visibility</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2 mb-8">
+                            <label class="flex items-center text-sm text-slate-600 cursor-pointer hover:text-slate-900">
+                                <input type="checkbox" class="mr-2 rounded border-slate-300 text-secondary focus:ring-secondary" />
+                                Remember Me
+                            </label>
+                            <a href="#" class="text-sm text-secondary hover:text-primary font-medium transition-colors">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" id="btnLogin" class="w-full bg-primary hover:bg-blue-900 text-white py-3.5 rounded-xl font-semibold shadow-[0_4px_14px_0_rgba(30,64,175,0.39)] transition-all flex justify-center items-center gap-2 transform active:scale-[0.98]">
+                            <span id="loginBtnText">Sign In</span>
+                            <span class="material-symbols-outlined text-[20px] ml-1">login</span>
+                        </button>
+                    </form>
+
+                    <div class="mt-8 flex items-center justify-center">
+                        <div class="border-t border-slate-200 flex-grow"></div>
+                        <span class="px-4 text-xs text-slate-400 font-semibold uppercase tracking-wider">OR</span>
+                        <div class="border-t border-slate-200 flex-grow"></div>
+                    </div>
+
+                    <div class="mt-8 text-center bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <p class="text-sm text-slate-600">
+                            Don't have an account? <br class="sm:hidden"/>
+                            <button onclick="switchView('register')" class="text-secondary font-semibold hover:underline mt-1 sm:mt-0 sm:ml-1">
+                                Switch to Register
+                            </button>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- REGISTER VIEW -->
+                <div id="view-register" class="view-section w-full">
+                    <div class="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 items-start">
+                        <span class="material-symbols-outlined text-amber-600 mt-0.5 text-[20px]">admin_panel_settings</span>
+                        <div>
+                            <h4 class="text-amber-900 font-semibold text-sm">Admin / HR Access Only</h4>
+                            <p class="text-amber-700 text-xs mt-1 leading-relaxed">Normal employees cannot self-register. Employee accounts are created exclusively by authorized HR personnel or Administrators.</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-slate-900">Register Employee</h2>
+                        <p class="text-slate-500 text-sm mt-1">Fill details to auto-generate employee credentials.</p>
+                    </div>
+
+                    <form id="registerForm" onsubmit="handleRegister(event)" class="flex flex-col h-[480px]">
+                        <!-- Scrollable Form Container -->
+                        <div class="flex-grow overflow-y-auto pr-3 custom-scrollbar">
+                            <!-- Single Grid for perfect alignment -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5 pb-4">
+                                
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">person</span>
+                                        <input type="text" id="regName" required class="form-input" placeholder="John Doe" />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Gender</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">wc</span>
+                                        <select id="regGender" required class="form-input appearance-none">
+                                            <option value="" disabled selected>Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Official Email</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">mail</span>
+                                        <input type="email" id="regEmail" required class="form-input" placeholder="john@company.com" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Mobile Number</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">phone_iphone</span>
+                                        <input type="tel" id="regMobile" required class="form-input" placeholder="+91 9876543210" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Company</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">domain</span>
+                                        <select id="regCompany" required class="form-input appearance-none">
+                                            <option value="Odoo India">Odoo India</option>
+                                            <option value="HRMS Global">HRMS Global</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Location</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">location_on</span>
+                                        <input type="text" id="regLocation" required class="form-input" placeholder="e.g. Mumbai" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Department</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">work</span>
+                                        <input type="text" id="regDept" required class="form-input" placeholder="e.g. Engineering" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Designation</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">badge</span>
+                                        <input type="text" id="regDesignation" required class="form-input" placeholder="e.g. SDE II" />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Reporting Manager</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">supervisor_account</span>
+                                        <input type="text" id="regManager" required class="form-input" placeholder="Manager Name" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Date of Joining</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">calendar_month</span>
+                                        <input type="date" id="regDOJ" required class="form-input" />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Employment Type</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">contract</span>
+                                        <select id="regType" required class="form-input appearance-none">
+                                            <option value="Full-Time">Full-Time</option>
+                                            <option value="Part-Time">Part-Time</option>
+                                            <option value="Contract">Contract</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Profile Photo</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">image</span>
+                                        <input type="file" id="regPhoto" accept="image/*" class="form-input !py-1.5 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Sticky Submit Button -->
+                        <div class="pt-4 bg-white border-t border-slate-100 shrink-0 mt-2">
+                            <button type="submit" id="btnRegister" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-emerald-500/30 transition-all flex justify-center items-center gap-2 transform active:scale-[0.98]">
+                                <span id="regBtnText">Create Employee Profile</span>
+                                <span class="material-symbols-outlined text-[20px] ml-1">person_add</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- SUCCESS VIEW (After Registration) -->
+                <div id="view-success" class="view-section w-full text-center py-6">
+                    <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-8 ring-green-50">
+                        <span class="material-symbols-outlined text-[40px]">check_circle</span>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Employee Created Successfully</h3>
+                    <p class="text-slate-500 mb-8 max-w-sm mx-auto text-sm leading-relaxed">
+                        The employee can login using the generated credentials and will be required to change the password during their first login.
+                    </p>
+                    
+                    <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 text-left mb-8 w-full shadow-sm relative overflow-hidden">
+                        <!-- Decorative bg -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full mix-blend-multiply filter blur-2xl opacity-50 -mr-10 -mt-10"></div>
+                        
+                        <div class="mb-5 relative z-10">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">badge</span> Generated Login ID</label>
+                            <div class="flex items-center justify-between mt-1.5 bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm group">
+                                <span id="successID" class="font-mono text-lg font-bold text-slate-800 tracking-wide">OIJODO20260001</span>
+                                <button type="button" onclick="copyText('successID')" class="text-slate-400 hover:text-secondary bg-slate-50 hover:bg-blue-50 p-1.5 rounded-md transition-colors" title="Copy ID">
+                                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative z-10">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">key</span> Temporary Password</label>
+                            <div class="flex items-center justify-between mt-1.5 bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm group">
+                                <span id="successPass" class="font-mono text-lg font-bold text-slate-800 tracking-wide">HRMS@5839</span>
+                                <button type="button" onclick="copyText('successPass')" class="text-slate-400 hover:text-secondary bg-slate-50 hover:bg-blue-50 p-1.5 rounded-md transition-colors" title="Copy Password">
+                                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button onclick="switchView('register'); document.getElementById('registerForm').reset();" class="bg-primary hover:bg-blue-900 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-md">
+                            Create Another
+                        </button>
+                        <button onclick="switchView('login')" class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-6 py-3 rounded-lg font-semibold transition-all">
+                            Back to Login
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        // IMPORTANT: ADD YOUR FIREBASE CONFIG HERE
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL", 
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        const viewLogin = document.getElementById('view-login');
+        const viewRegister = document.getElementById('view-register');
+        const viewSuccess = document.getElementById('view-success');
+        const tabLogin = document.getElementById('tab-login');
+        const tabRegister = document.getElementById('tab-register');
+        const tabsContainer = document.getElementById('tabs-container');
+
+        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+        window.showToast = function(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastMsg = document.getElementById('toast-message');
+            
+            toastMsg.innerText = message;
+            
+            if(type === 'success') {
+                toast.className = "fixed top-6 right-6 transform transition-all duration-300 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm bg-emerald-500 translate-x-0 opacity-100";
+                toastIcon.innerText = "check_circle";
+            } else if(type === 'error') {
+                toast.className = "fixed top-6 right-6 transform transition-all duration-300 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm bg-red-500 translate-x-0 opacity-100";
+                toastIcon.innerText = "error";
+            } else {
+                toast.className = "fixed top-6 right-6 transform transition-all duration-300 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm bg-blue-600 translate-x-0 opacity-100";
+                toastIcon.innerText = "info";
+            }
+
+            setTimeout(() => {
+                toast.classList.replace('translate-x-0', 'translate-x-full');
+                toast.classList.replace('opacity-100', 'opacity-0');
+            }, 3000);
+        }
+
+        window.switchView = function(view) {
+            viewLogin.classList.remove('active');
+            viewRegister.classList.remove('active');
+            viewSuccess.classList.remove('active');
+            
+            if(view !== 'success') {
+                tabsContainer.style.display = 'inline-flex';
+                if(view === 'login') {
+                    tabLogin.className = "px-5 py-2 text-sm font-semibold rounded-md transition-all bg-white text-primary shadow-sm";
+                    tabRegister.className = "px-5 py-2 text-sm font-semibold rounded-md transition-all text-slate-500 hover:text-slate-700";
+                } else {
+                    tabRegister.className = "px-5 py-2 text-sm font-semibold rounded-md transition-all bg-white text-accent shadow-sm";
+                    tabLogin.className = "px-5 py-2 text-sm font-semibold rounded-md transition-all text-slate-500 hover:text-slate-700";
+                }
+            } else {
+                tabsContainer.style.display = 'none';
+            }
+
+            setTimeout(() => {
+                if(view === 'login') viewLogin.classList.add('active');
+                if(view === 'register') viewRegister.classList.add('active');
+                if(view === 'success') viewSuccess.classList.add('active');
+            }, 50);
+        }
+
+        window.togglePassword = function(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.innerText = "visibility_off";
+            } else {
+                input.type = "password";
+                iconElement.innerText = "visibility";
+            }
+        }
+
+        function generateEmployeeID(fullName, doj, company) {
+            const prefix = company === 'Odoo India' ? 'OI' : 'HG';
+            const names = fullName.trim().split(' ');
+            let initials = 'XX';
+            
+            if(names.length >= 2) {
+                initials = (names[0][0] + names[names.length-1][0]).toUpperCase();
+            } else if (names.length === 1 && names[0].length >= 2) {
+                initials = names[0].substring(0, 2).toUpperCase();
+            }
+
+            const year = doj ? new Date(doj).getFullYear().toString() : new Date().getFullYear().toString();
+            const serial = Math.floor(1000 + Math.random() * 9000).toString(); 
+            
+            return `${prefix}${initials}${year}${serial}`;
+        }
+
+        function generateRandomPassword() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            let pass = "";
+            for (let i = 0; i < 10; i++) {
+                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return pass;
+        }
+
+        window.copyText = function(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Copied to clipboard!", "success");
+            });
+        }
+
+        window.handleLogin = function(e) {
+            e.preventDefault();
+            const btnText = document.getElementById('loginBtnText');
+            const originalText = btnText.innerText;
+            btnText.innerHTML = `<span class="material-symbols-outlined spinner text-[20px]">sync</span> Authenticating...`;
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    const dbRef = ref(database);
+                    
+                    get(child(dbRef, `users/${user.uid}`)).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            localStorage.setItem("hrms_session", Date.now().toString());
+                            localStorage.setItem("hrms_role", userData.role);
+                            
+                            showToast(`Login successful. Welcome ${userData.fullName}!`, "success");
+                            
+                            setTimeout(() => {
+                                // IMPORTANT: UPDATE THESE URLS TO YOUR DASHBOARD PAGES
+                                if(userData.role === 'admin') {
+                                    window.location.href = 'admin-dashboard.html'; 
+                                } else {
+                                    window.location.href = 'employee-dashboard.html';
+                                }
+                            }, 1500);
+
+                        } else {
+                            btnText.innerText = originalText;
+                            showToast("User role not found in database.", "error");
+                        }
+                    }).catch((error) => {
+                        btnText.innerText = originalText;
+                        showToast("Failed to fetch user data.", "error");
+                        console.error(error);
+                    });
+                })
+                .catch((error) => {
+                    btnText.innerText = originalText;
+                    showToast(error.message, "error");
+                });
+        }
+
+        window.handleRegister = function(e) {
+            e.preventDefault();
+            const btnText = document.getElementById('regBtnText');
+            const originalText = btnText.innerText;
+            btnText.innerHTML = `<span class="material-symbols-outlined spinner text-[20px]">sync</span> Processing...`;
+
+            const name = document.getElementById('regName').value;
+            const gender = document.getElementById('regGender').value;
+            const mobile = document.getElementById('regMobile').value;
+            const doj = document.getElementById('regDOJ').value;
+            const company = document.getElementById('regCompany').value;
+            const location = document.getElementById('regLocation').value;
+            const department = document.getElementById('regDept').value;
+            const designation = document.getElementById('regDesignation').value;
+            const manager = document.getElementById('regManager').value;
+            const empType = document.getElementById('regType').value;
+            const email = document.getElementById('regEmail').value; 
+
+            const generatedID = generateEmployeeID(name, doj, company);
+            const generatedPass = generateRandomPassword();
+
+            createUserWithEmailAndPassword(auth, email, generatedPass)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    set(ref(database, 'users/' + user.uid), {
+                        fullName: name,
+                        employeeId: generatedID,
+                        email: email,
+                        mobile: mobile,
+                        gender: gender,
+                        company: company,
+                        location: location,
+                        department: department,
+                        designation: designation,
+                        reportingManager: manager,
+                        dateOfJoining: doj,
+                        employmentType: empType,
+                        role: "employee", 
+                        createdAt: new Date().toISOString()
+                    }).then(() => {
+                        btnText.innerText = originalText;
+                        document.getElementById('successID').innerText = generatedID;
+                        document.getElementById('successPass').innerText = generatedPass;
+                        switchView('success');
+                        showToast("Employee account created securely.", "success");
+                    }).catch((error) => {
+                        btnText.innerText = originalText;
+                        showToast("Error saving user data: " + error.message, "error");
+                    });
+                })
+                .catch((error) => {
+                    btnText.innerText = originalText;
+                    showToast(error.message, "error");
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sessionTime = localStorage.getItem("hrms_session");
+            const role = localStorage.getItem("hrms_role");
+            
+            if (sessionTime && role) {
+                const diff = Date.now() - parseInt(sessionTime);
+                if (diff < THIRTY_DAYS_MS) {
+                    showToast("Valid session found. Redirecting...", "info");
+                    setTimeout(() => {
+                         // IMPORTANT: UPDATE THESE URLS TO YOUR DASHBOARD PAGES
+                        if(role === 'admin') {
+                            window.location.href = 'admin-dashboard.html'; 
+                        } else {
+                            window.location.href = 'employee-dashboard.html';
+                        }
+                    }, 1000);
+                } else {
+                    localStorage.removeItem("hrms_session");
+                    localStorage.removeItem("hrms_role");
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
