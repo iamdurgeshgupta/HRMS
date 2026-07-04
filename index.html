@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>HRMS Global | Smarter Workforce Management</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@300,0,0,24&display=swap" rel="stylesheet"/>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0f172a', 
+                        'primary-light': '#1e293b',
+                        accent: '#4f46e5', 
+                        'accent-hover': '#4338ca',
+                        surface: '#ffffff',
+                        background: '#f8fafc', 
+                        muted: '#64748b',
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 40px -10px rgba(79, 70, 229, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        #message-box {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #message-box.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .pattern-bg {
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        #page-overlay {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            transition: opacity 0.5s ease;
+        }
+        #page-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-primary antialiased selection:bg-accent selection:text-white">
+
+    <div id="page-overlay">
+        <div class="w-12 h-12 border-4 border-slate-200 border-t-accent rounded-full animate-spin"></div>
+        <p class="text-sm font-medium text-slate-600 tracking-wide" id="overlay-text">Verifying Session...</p>
+    </div>
+
+    <nav class="glass-nav fixed top-0 w-full z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+       
+            <div class="flex items-center gap-2.5 cursor-pointer">
+                <div class="w-10 h-10 rounded-xl bg-accent text-white flex items-center justify-center shadow-lg">
+                    <span class="material-symbols-outlined text-[24px]">view_cozy</span>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-primary">HRMS</span>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-8">
+                <a class="text-sm font-medium text-primary border-b-2 border-primary py-2" href="#">Overview</a>
+                <a class="text-sm font-medium text-muted hover:text-primary transition-colors py-2" href="#features">Features</a>
+                <a class="text-sm font-medium text-muted hover:text-primary transition-colors py-2" href="#about">About</a>
+            </div>
+
+            <div class="flex items-center">
+                <button id="nav-auth-btn" class="bg-primary text-white text-sm font-medium px-6 py-2.5 rounded-full hover:bg-primary-light transition-all shadow-md flex items-center gap-2 hover-lift">
+                    <span class="material-symbols-outlined text-[18px] animate-spin" id="nav-btn-icon">sync</span>
+                    <span id="nav-btn-text">Loading...</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-20">
+        <section class="relative pt-24 pb-32 overflow-hidden px-6 lg:px-8">
+            
+            <div class="absolute inset-0 pattern-bg opacity-40 z-0"></div>
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-accent/10 blur-[100px] rounded-full z-0 pointer-events-none"></div>
+
+            <div class="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm mb-8 animate-fade-in-up">
+                    <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+                    <span class="text-xs font-semibold tracking-wide text-slate-600 uppercase">One Platform. Every Employee.</span>
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
+                    Empowering Smarter <br/>
+                    <span class="text-gradient">Workforce Management</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-muted max-w-2xl mb-10 leading-relaxed">
+                    HRMS is an intelligent system that simplifies employee management by bringing attendance, leave, payroll, and HR operations into a single secure platform. 
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    
+                    <button id="hero-auth-btn" class="bg-accent text-white text-base font-semibold px-8 py-3.5 rounded-xl hover:bg-accent-hover transition-all flex items-center justify-center gap-2 shadow-glow hover-lift w-full sm:w-auto">
+                        <span class="material-symbols-outlined text-[20px]" id="hero-btn-icon">sync</span>
+                        <span id="hero-btn-text">Loading...</span>
+                    </button>
+                    <button class="bg-white border border-slate-200 text-primary text-base font-semibold px-8 py-3.5 rounded-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm hover-lift w-full sm:w-auto">
+                        <span class="material-symbols-outlined text-[20px]">play_circle</span>
+                        Live Demo
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative max-w-5xl mx-auto mt-20 z-10">
+                <div class="bg-white/50 backdrop-blur-md border border-white rounded-2xl shadow-2xl p-2 md:p-4">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2000&h=1000" alt="HRMS Dashboard Mockup" class="rounded-xl w-full object-cover h-[300px] md:h-[500px] opacity-90 shadow-inner" style="object-position: top;"/>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="py-24 bg-white border-y border-slate-100">
+            <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="text-sm font-bold text-accent tracking-widest uppercase mb-3">About the Project</h2>
+                    <h3 class="text-3xl md:text-4xl font-bold tracking-tight text-primary mb-6">Reimagining Human Resource Management</h3>
+                    <div class="space-y-4 text-muted text-lg leading-relaxed">
+                        <p>
+                            Managing employees through spreadsheets and paperwork often leads to errors, delays, and inefficiencies. HRMS solves these challenges by providing a centralized digital platform where administrators, HR officers, and employees can seamlessly manage daily HR activities.
+                        </p>
+                        <p>
+                            From employee onboarding to attendance tracking, leave approvals, payroll generation, and detailed analytics, the system automates every critical HR process while ensuring transparency, security, and accuracy.
+                        </p>
+                        <p>
+                            Built with scalability and user experience in mind, HRMS enables organizations to save time, reduce administrative workload, and make data-driven decisions through real-time dashboards and automated workflows.
+                        </p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col gap-3">
+                        <span class="material-symbols-outlined text-4xl text-accent">speed</span>
+                        <h4 class="font-bold text-lg">Save Time</h4>
+                        <p class="text-sm text-muted">Automate repetitive tasks and focus on culture.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col gap-3 translate-y-8">
+                        <span class="material-symbols-outlined text-4xl text-accent">monitoring</span>
+                        <h4 class="font-bold text-lg">Data-Driven</h4>
+                        <p class="text-sm text-muted">Make better decisions with real-time analytics.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col gap-3">
+                        <span class="material-symbols-outlined text-4xl text-accent">verified_user</span>
+                        <h4 class="font-bold text-lg">High Security</h4>
+                        <p class="text-sm text-muted">Enterprise-grade protection for your data.</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col gap-3 translate-y-8">
+                        <span class="material-symbols-outlined text-4xl text-accent">group_add</span>
+                        <h4 class="font-bold text-lg">Scalable</h4>
+                        <p class="text-sm text-muted">Grows seamlessly as your team expands.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 bg-background">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-primary mb-4">Why Choose HRMS?</h2>
+                    <p class="text-lg text-muted">Everything you need to run your workforce effortlessly, all in one place.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                   
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-500 mt-0.5">task_alt</span>
+                        <span class="font-medium text-slate-800">Role-Based Access (Admin, HR & Employee)</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-500 mt-0.5">task_alt</span>
+                        <span class="font-medium text-slate-800">Smart Check-In & Check-Out</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-500 mt-0.5">task_alt</span>
+                        <span class="font-medium text-slate-800">Automated Payroll Calculation</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-500 mt-0.5">task_alt</span>
+                        <span class="font-medium text-slate-800">Leave & Time-Off Management</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-500 mt-0.5">task_alt</span>
+                        <span class="font-medium text-slate-800">Employee Directory & Digital Profiles</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-500 mt-0.5">task_alt</span>
+                        <span class="font-medium text-slate-800">Real-Time Dashboard & Analytics</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-500 mt-0.5">task_alt</span>
+                        <span class="font-medium text-slate-800">Secure Auth & User Management</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-green-500 mt-0.5">task_alt</span>
+                        <span class="font-medium text-slate-800">Modern, Responsive & Scalable</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-primary mb-4">Key Highlights</h2>
+                    <p class="text-lg text-muted max-w-2xl">Powerful features built to handle the complexities of modern HR management.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                   
+                    <div class="group p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-soft transition-all duration-300">
+                        <div class="w-12 h-12 rounded-lg bg-indigo-100 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">insights</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary mb-3">Real-Time Workforce Analytics</h3>
+                        <p class="text-muted leading-relaxed">Monitor attendance, leave status, and employee activities instantly from an intuitive dashboard.</p>
+                    </div>
+                    
+                    <div class="group p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-soft transition-all duration-300">
+                        <div class="w-12 h-12 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">timer</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary mb-3">Automated Attendance</h3>
+                        <p class="text-muted leading-relaxed">Accurate working hours tracking with Check-In/Check-Out logic and automatic overtime calculation.</p>
+                    </div>
+
+                    <div class="group p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-soft transition-all duration-300">
+                        <div class="w-12 h-12 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary mb-3">Smart Payroll Engine</h3>
+                        <p class="text-muted leading-relaxed">Automatically calculates salary components, PF, taxes, allowances, and deductions effortlessly.</p>
+                    </div>
+
+                    <div class="group p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-soft transition-all duration-300">
+                        <div class="w-12 h-12 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">event_available</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary mb-3">Leave Management</h3>
+                        <p class="text-muted leading-relaxed">Easy leave requests with multi-level approval workflows and transparent leave balance tracking.</p>
+                    </div>
+
+                    <div class="group p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-soft transition-all duration-300">
+                        <div class="w-12 h-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">manage_accounts</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary mb-3">Employee Management</h3>
+                        <p class="text-muted leading-relaxed">Maintain digital employee profiles, skills, certifications, documents, and organizational hierarchy.</p>
+                    </div>
+
+                    <div class="group p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-soft transition-all duration-300">
+                        <div class="w-12 h-12 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">shield_lock</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary mb-3">Enterprise-Grade Security</h3>
+                        <p class="text-muted leading-relaxed">Role-based permissions with secure authentication and strictly controlled data access levels.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 bg-primary text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+                <span class="material-symbols-outlined text-5xl text-accent mb-6">visibility</span>
+                <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-8 leading-tight">Our Vision</h2>
+                <p class="text-xl md:text-2xl text-slate-300 font-light leading-relaxed">
+                    "To build a next-generation Human Resource Management platform that digitizes and automates every aspect of workforce management, enabling organizations to operate more efficiently, transparently, and intelligently."
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-12">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="col-span-1 md:col-span-2">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[18px]">view_cozy</span>
+                    </div>
+                    <span class="text-lg font-bold text-primary">HRMS Global</span>
+                </div>
+                <p class="text-slate-500 text-sm max-w-sm">Built to simplify HR operations for modern enterprises. © 2026 HRMS Global. All rights reserved.</p>
+            </div>
+            <div>
+                <h4 class="font-bold text-primary mb-4">Product</h4>
+                <ul class="space-y-2 text-sm text-muted">
+                    <li><a href="#" class="hover:text-accent transition-colors">Features</a></li>
+                    <li><a href="#" class="hover:text-accent transition-colors">Pricing</a></li>
+                    <li><a href="#" class="hover:text-accent transition-colors">Integrations</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-primary mb-4">Legal & Support</h4>
+                <ul class="space-y-2 text-sm text-muted">
+                    <li><a href="#" class="hover:text-accent transition-colors">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-accent transition-colors">Terms of Service</a></li>
+                    <li><a href="#" class="hover:text-accent transition-colors">Help Center</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <div id="message-box" class="fixed bottom-6 right-6 bg-primary text-white px-6 py-4 rounded-xl shadow-2xl z-[100] flex items-center gap-3 border border-slate-700">
+        <span class="material-symbols-outlined text-accent" id="msg-icon">info</span>
+        <span id="msg-text" class="text-sm font-medium">Message here</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL", 
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+        
+        let app, auth, database;
+        let isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+        const navBtnText = document.getElementById("nav-btn-text");
+        const navBtnIcon = document.getElementById("nav-btn-icon");
+        const navBtn = document.getElementById("nav-auth-btn");
+        const heroBtnText = document.getElementById("hero-btn-text");
+        const heroBtnIcon = document.getElementById("hero-btn-icon");
+        const heroBtn = document.getElementById("hero-auth-btn");
+        const overlay = document.getElementById("page-overlay");
+        const overlayText = document.getElementById("overlay-text");
+
+        if (isFirebaseConfigured) {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                database = getDatabase(app);
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+                hideOverlay();
+            }
+        }
+
+        
+        function showMessage(text, icon = "info") {
+            const msgBox = document.getElementById("message-box");
+            document.getElementById("msg-text").innerText = text;
+            document.getElementById("msg-icon").innerText = icon;
+            msgBox.classList.add("show");
+            setTimeout(() => {
+                msgBox.classList.remove("show");
+            }, 3000);
+        }
+
+        function hideOverlay() {
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 500); 
+        }
+
+        function redirectToLogin() {
+            window.location.href = 'auth.html'; 
+        }
+
+        function updateUI(isLoggedIn) {
+            navBtnIcon.classList.remove("animate-spin");
+            heroBtnIcon.classList.remove("animate-spin");
+
+            if (isLoggedIn) {
+                const dashText = "Go to Dashboard";
+                const dashIcon = "dashboard";
+                
+                navBtnText.innerText = dashText;
+                navBtnIcon.innerText = dashIcon;
+                
+                heroBtnText.innerText = dashText;
+                heroBtnIcon.innerText = dashIcon;
+            } else {
+                const loginText = "Sign In";
+                const loginIcon = "login";
+
+                navBtnText.innerText = loginText;
+                navBtnIcon.innerText = loginIcon;
+                navBtn.onclick = redirectToLogin;
+                
+                heroBtnText.innerText = "Get Started";
+                heroBtnIcon.innerText = loginIcon;
+                heroBtn.onclick = redirectToLogin; 
+            }
+        }
+
+        function isSessionValid(lastLoginStr) {
+            if (!lastLoginStr) return false;
+            const timeDiff = Date.now() - parseInt(lastLoginStr);
+            return timeDiff <= THIRTY_DAYS_MS;
+        }
+
+
+        async function verifyAndRedirectUser(user) {
+            const lastLogin = localStorage.getItem("hrms_session");
+
+            if (!isSessionValid(lastLogin)) {
+                console.log("Session expired or not found. Logging out.");
+                localStorage.removeItem("hrms_session");
+                localStorage.removeItem("hrms_role");
+                await signOut(auth);
+                updateUI(false);
+                hideOverlay();
+                return;
+            }
+
+            overlayText.innerText = "Loading your dashboard...";
+            
+            try {
+                const userRef = ref(database, 'users/' + user.uid);
+                const snapshot = await get(userRef);
+
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    const role = userData.role || 'employee'; 
+                    
+                    localStorage.setItem('hrms_role', role);
+                    updateUI(true);
+
+                    // 3. Auto-Redirect based on role
+                    if (role === 'admin') {
+                        // In production: window.location.href = 'admin-dashboard.html';
+                        overlayText.innerText = "Redirecting to Admin Dashboard...";
+                        setTimeout(() => {
+                            alert("Simulation: Redirecting to Admin Dashboard (admin-dashboard.html)");
+                            hideOverlay();
+                        }, 1000);
+                    } else {
+                        // In production: window.location.href = 'employee-dashboard.html';
+                        overlayText.innerText = "Redirecting to Employee Dashboard...";
+                        setTimeout(() => {
+                            alert("Simulation: Redirecting to Employee Dashboard (employee-dashboard.html)");
+                            hideOverlay();
+                        }, 1000);
+                    }
+
+                    navBtn.onclick = () => { window.location.href = role === 'admin' ? 'admin-dashboard.html' : 'employee-dashboard.html'; };
+                    heroBtn.onclick = navBtn.onclick;
+
+                } else {
+                    console.log("No user data found in database for UID:", user.uid);
+                    updateUI(false);
+                    hideOverlay();
+                }
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+                updateUI(false);
+                hideOverlay();
+                showMessage("Error verifying account data.", "error");
+            }
+        }
+
+
+        function initializeAppLogic() {
+            if (isFirebaseConfigured) {
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        verifyAndRedirectUser(user);
+                    } else {
+                        
+                        updateUI(false);
+                        hideOverlay();
+                    }
+                });
+            } else {
+                
+                console.warn("Firebase not configured. Running local fallback.");
+                const lastLogin = localStorage.getItem("hrms_session");
+                
+                if (isSessionValid(lastLogin)) {
+                    updateUI(true);
+                    const role = localStorage.getItem('hrms_role') || 'employee';
+                    overlayText.innerText = "Redirecting to " + (role === 'admin' ? "Admin" : "Employee") + " Dashboard...";
+                    
+                    setTimeout(() => {
+                        alert(`Simulation: Auto-redirecting to ${role}-dashboard.html`);
+                        hideOverlay();
+                        navBtn.onclick = () => { alert(`Going to ${role} dashboard`); };
+                        heroBtn.onclick = navBtn.onclick;
+                    }, 1000);
+                } else {
+                    updateUI(false);
+                    hideOverlay();
+                }
+            }
+        }
+
+        
+        initializeAppLogic();
+        
+        
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-sm');
+                nav.classList.replace('h-20', 'h-16');
+            } else {
+                nav.classList.remove('shadow-sm');
+                nav.classList.replace('h-16', 'h-20');
+            }
+        });
+    </script>
+</body>
+</html>
