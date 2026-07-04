@@ -3,7 +3,10 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <title>Enterprise HRMS | Admin Console</title>
+    <title>HRSync Pro | Admin Dashboard</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,13 +75,21 @@
     <div id="mobile-overlay" class="fixed inset-0 bg-text-main/50 z-40 hidden lg:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
 
     <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-sidebar bg-surface border-r border-border flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shrink-0">
-        <div class="h-16 flex items-center px-6 border-b border-border bg-surface shrink-0 cursor-pointer" onclick="switchView('dashboard')">
-            <div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-white font-bold text-sm shadow-sm mr-3">EH</div>
-            <div><h1 class="font-bold text-text-main text-lg leading-tight tracking-tight">EnterpriseHR</h1></div>
-            <button class="ml-auto lg:hidden text-text-muted hover:text-text-main" onclick="toggleSidebar()">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
+        <div class="h-16 flex items-center px-6 border-b border-border bg-surface shrink-0 cursor-pointer"
+     onclick="switchView('dashboard')">
+
+    <img
+        src="/logo2.png"
+        alt="HRMS Logo"
+        class="h-20 w-auto object-contain"
+    />
+
+    <button class="ml-auto lg:hidden text-text-muted hover:text-text-main"
+            onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+
+</div>
 
         <div class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1 no-scrollbar">
             <a href="#" onclick="switchView('dashboard')" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary-light text-primary font-medium transition-colors" data-view="dashboard">
