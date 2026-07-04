@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Enterprise HRMS | Employee Dashboard</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@300,1,0,24&display=swap" rel="stylesheet"/>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#2563EB', hover: '#1D4ED8', light: '#EFF6FF' },
+                        success: { DEFAULT: '#22C55E' },
+                        danger: { DEFAULT: '#EF4444' },
+                        warning: { DEFAULT: '#F59E0B' },
+                        background: '#F9FAFB', 
+                        surface: '#FFFFFF',
+                        border: '#E5E7EB',
+                        text: { main: '#111827', muted: '#6B7280', light: '#9CA3AF' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    boxShadow: {
+                        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'dropdown': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    },
+                    spacing: { 'sidebar': '240px' },
+                    animation: { 'fade-in': 'fadeIn 0.2s ease-out forwards' },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(5px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .view-container { display: none; }
+        .view-container.active-view { 
+            display: flex; 
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        #toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+    </style>
+</head>
+
+<body class="bg-background text-text-main font-sans min-h-screen flex overflow-hidden">
+
+    <div id="toast-container"></div>
+
+    <nav class="w-sidebar h-screen bg-surface border-r border-border flex-col hidden md:flex flex-shrink-0 relative z-20">
+        <div class="h-16 flex items-center px-6 border-b border-border">
+            <div class="w-7 h-7 rounded bg-primary flex items-center justify-center text-white font-bold text-xs shadow-sm mr-2.5">EH</div>
+            <h1 class="font-bold text-text-main text-[17px] tracking-tight">EnterpriseHR</h1>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-5 px-3 flex flex-col gap-1 no-scrollbar" id="sidebar-nav">
+            <p class="px-3 text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2">Menu</p>
+            
+            <button type="button" data-sidebar-target="view-dashboard" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary-light text-primary font-medium transition-colors w-full text-left">
+                <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                <span class="text-sm">Dashboard</span>
+            </button>
+            <button type="button" data-sidebar-target="view-payroll" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-text-main hover:bg-slate-50 transition-colors w-full text-left">
+                <span class="material-symbols-outlined text-[20px]">payments</span>
+                <span class="text-sm">Payroll</span>
+            </button>
+            <button type="button" data-sidebar-target="view-documents" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-text-main hover:bg-slate-50 transition-colors w-full text-left">
+                <span class="material-symbols-outlined text-[20px]">folder</span>
+                <span class="text-sm">Documents</span>
+            </button>
+            <button type="button" data-sidebar-target="view-reports" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-text-main hover:bg-slate-50 transition-colors w-full text-left">
+                <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+                <span class="text-sm">Reports</span>
+            </button>
+
+            <p class="px-3 text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2 mt-6">System</p>
+
+            <button type="button" data-sidebar-target="view-settings" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:text-text-main hover:bg-slate-50 transition-colors w-full text-left">
+                <span class="material-symbols-outlined text-[20px]">person</span>
+                <span class="text-sm">My Profile</span>
+            </button>
+        </div>
+
+        <div class="p-4 border-t border-border bg-surface cursor-pointer hover:bg-slate-50 transition-colors flex items-center gap-3" id="sidebar-profile-footer" data-sidebar-target="view-settings">
+            <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold border border-border" id="sidebar-user-avatar">?</div>
+            <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-semibold text-text-main truncate" id="sidebar-user-name">Loading...</p>
+                <p class="text-[11px] text-text-muted truncate capitalize" id="sidebar-user-role">...</p>
+            </div>
+            <span class="material-symbols-outlined text-[18px] text-text-light">chevron_right</span>
+        </div>
+    </nav>
+
+    <!-- Mobile top bar -->
+    <div class="md:hidden fixed top-0 left-0 right-0 h-14 bg-surface border-b border-border flex items-center justify-between px-4 z-40">
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded bg-primary flex items-center justify-center text-white font-bold text-xs shadow-sm">EH</div>
+            <h1 class="font-bold text-text-main text-[15px] tracking-tight">EnterpriseHR</h1>
+        </div>
+        <button id="mobile-menu-btn" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-50 text-text-main">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </div>
+    <div id="mobile-menu-backdrop" class="hidden md:hidden fixed inset-0 bg-text-main/40 z-40" ></div>
+    <div id="mobile-menu-panel" class="hidden md:hidden fixed top-14 left-0 right-0 bg-surface border-b border-border shadow-dropdown z-50 p-3 flex flex-col gap-1">
+        <button type="button" data-sidebar-target="view-dashboard" class="sidebar-link-mobile flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main font-medium w-full text-left">
+            <span class="material-symbols-outlined text-[20px]">dashboard</span><span class="text-sm">Dashboard</span>
+        </button>
+        <button type="button" data-sidebar-target="view-payroll" class="sidebar-link-mobile flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main font-medium w-full text-left">
+            <span class="material-symbols-outlined text-[20px]">payments</span><span class="text-sm">Payroll</span>
+        </button>
+        <button type="button" data-sidebar-target="view-documents" class="sidebar-link-mobile flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main font-medium w-full text-left">
+            <span class="material-symbols-outlined text-[20px]">folder</span><span class="text-sm">Documents</span>
+        </button>
+        <button type="button" data-sidebar-target="view-reports" class="sidebar-link-mobile flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main font-medium w-full text-left">
+            <span class="material-symbols-outlined text-[20px]">bar_chart</span><span class="text-sm">Reports</span>
+        </button>
+        <button type="button" data-sidebar-target="view-settings" class="sidebar-link-mobile flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main font-medium w-full text-left">
+            <span class="material-symbols-outlined text-[20px]">person</span><span class="text-sm">My Profile</span>
+        </button>
+        <button type="button" id="mobile-logout-btn" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-danger font-medium w-full text-left border-t border-border mt-1 pt-3">
+            <span class="material-symbols-outlined text-[20px]">logout</span><span class="text-sm">Log Out</span>
+        </button>
+    </div>
+
+    <main class="flex-1 flex flex-col min-w-0 h-screen relative bg-surface pt-14 md:pt-0">
+        
+        <header class="hidden md:flex items-center justify-between px-6 h-16 bg-surface border-b border-border sticky top-0 z-30 flex-shrink-0">
+            
+            <nav class="flex h-full items-end gap-6" id="main-tabs">
+                <button data-target="view-dashboard" class="tab-btn h-full flex items-center pb-4 px-1 border-b-2 border-primary text-primary font-medium text-[15px] transition-colors relative top-[1px]">
+                    Dashboard
+                </button>
+                <button data-target="view-attendance" class="tab-btn h-full flex items-center pb-4 px-1 border-b-2 border-transparent text-text-muted hover:text-text-main font-medium text-[15px] transition-colors relative top-[1px]">
+                    Attendance
+                </button>
+                <button data-target="view-timeoff" class="tab-btn h-full flex items-center pb-4 px-1 border-b-2 border-transparent text-text-muted hover:text-text-main font-medium text-[15px] transition-colors relative top-[1px]">
+                    Time Off
+                </button>
+            </nav>
+
+            <div class="flex items-center gap-4 mb-1">
+                <div class="relative">
+                    <button id="checkin-button" class="flex items-center gap-2 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-full border border-border transition-all shadow-sm">
+                        <span id="header-status-dot" class="w-2.5 h-2.5 rounded-full bg-danger block"></span>
+                        <span class="text-sm font-semibold text-text-main" id="header-status-text">Check IN</span>
+                        <span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span>
+                    </button>
+                    
+                    <div id="checkin-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-surface border border-border rounded-lg shadow-dropdown z-50 p-4">
+                        <div id="checkin-state" class="block">
+                            <p class="text-sm text-text-muted mb-3 text-center">Ready to start your day?</p>
+                            <button id="action-checkin" class="w-full bg-primary text-white text-sm font-semibold py-2 rounded-lg hover:bg-primary-hover transition-colors shadow-sm">
+                                Confirm Check IN
+                            </button>
+                        </div>
+                        <div id="checkout-state" class="hidden">
+                            <p class="text-xs text-text-muted text-center mb-1">Session Active</p>
+                            <p class="text-2xl font-bold text-text-main text-center font-mono mb-4 tracking-tight" id="systray-timer">00:00:00</p>
+                            <button id="action-checkout" class="w-full bg-surface border border-border text-text-main text-sm font-semibold py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+                                Check OUT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative pl-2 border-l border-border">
+                    <button id="profile-button" class="flex items-center hover:opacity-80 transition-opacity">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs border border-border" id="header-user-avatar">?</div>
+                    </button>
+                    <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-surface border border-border rounded-lg shadow-dropdown z-50 py-1">
+                        <button type="button" id="my-profile-link" data-sidebar-target="view-settings" class="w-full text-left block px-4 py-2 text-sm text-text-main hover:bg-slate-50 font-medium">My Profile</button>
+                        <button type="button" id="logout-btn" class="w-full text-left block px-4 py-2 text-sm text-danger hover:bg-danger-light font-medium border-t border-border mt-1 pt-2">Log Out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto bg-background p-4 md:p-6">
+            <div class="max-w-7xl mx-auto h-full">
+
+                <!-- DASHBOARD WIDGETS -->
+                <div id="view-dashboard" class="view-container active-view flex-col h-full">
+                    <div class="mb-6 flex justify-between items-end">
+                        <div>
+                            <h2 class="text-2xl font-bold text-text-main">Dashboard</h2>
+                            <p class="text-sm text-text-muted">Welcome back! Here's what's happening today.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        
+                        <!-- Today's Attendance -->
+                        <div class="bg-surface p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-bold text-text-light uppercase tracking-wider">Today's Attendance</p>
+                                <span class="material-symbols-outlined text-primary text-[20px]">timer</span>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-text-main" id="widget-att-status">Pending</p>
+                                <p class="text-xs text-text-muted mt-1" id="widget-att-time">Not checked in yet</p>
+                            </div>
+                        </div>
+
+                        <!-- Working Hours -->
+                        <div class="bg-surface p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-bold text-text-light uppercase tracking-wider">Working Hours</p>
+                                <span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-text-main">142 <span class="text-sm font-normal text-text-muted">hrs</span></p>
+                                <p class="text-xs text-success mt-1">This Month</p>
+                            </div>
+                        </div>
+
+                        <!-- Leave Balance -->
+                        <div class="bg-surface p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-bold text-text-light uppercase tracking-wider">Leave Balance</p>
+                                <span class="material-symbols-outlined text-primary text-[20px]">event_note</span>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-text-main">12 <span class="text-sm font-normal text-text-muted">Days</span></p>
+                                <p class="text-xs text-text-muted mt-1">Paid Time Off Remaining</p>
+                            </div>
+                        </div>
+
+                        <!-- Attendance % -->
+                        <div class="bg-surface p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-bold text-text-light uppercase tracking-wider">Attendance Rate</p>
+                                <span class="material-symbols-outlined text-primary text-[20px]">analytics</span>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-text-main">95%</p>
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                  <div class="bg-success h-1.5 rounded-full" style="width: 95%"></div>
+                                </div>
+                                <p class="text-xs text-text-muted mt-2">Overall this year</p>
+                            </div>
+                        </div>
+
+                        <!-- Salary Status -->
+                        <div class="bg-surface p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-bold text-text-light uppercase tracking-wider">Salary Status</p>
+                                <span class="material-symbols-outlined text-success text-[20px]">check_circle</span>
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold text-text-main">Processed</p>
+                                <p class="text-xs text-text-muted mt-1">For June 2026</p>
+                            </div>
+                        </div>
+
+                        <!-- Upcoming Holiday -->
+                        <div class="bg-surface p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <p class="text-[11px] font-bold text-text-light uppercase tracking-wider">Upcoming Holiday</p>
+                                <span class="material-symbols-outlined text-warning text-[20px]">celebration</span>
+                            </div>
+                            <div>
+                                <p class="text-lg font-bold text-text-main">Independence Day</p>
+                                <p class="text-xs text-text-muted mt-1">Aug 15, 2026</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ATTENDANCE -->
+                <div id="view-attendance" class="view-container flex-col h-full">
+                    <div class="flex justify-between items-center mb-6 bg-surface p-3 rounded-lg border border-border shadow-sm">
+                        <div class="flex items-center gap-2">
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-border bg-white hover:bg-slate-50 text-text-main"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+                            <button class="w-8 h-8 flex items-center justify-center rounded border border-border bg-white hover:bg-slate-50 text-text-main"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+                            
+                            <button class="px-3 py-1.5 flex items-center gap-2 rounded border border-border bg-white hover:bg-slate-50 text-sm font-medium ml-2 shadow-sm" id="current-date-display">
+                                Today <span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span>
+                            </button>
+                        </div>
+                        
+                        <div class="relative w-64 hidden sm:block">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-light text-[16px]">search</span>
+                            <input type="text" placeholder="Search attendance..." class="w-full pl-9 pr-3 py-1.5 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" />
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-lg border border-border shadow-sm overflow-hidden flex-1">
+                        <div class="overflow-x-auto h-full">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 border-b border-border">
+                                    <tr>
+                                        <th class="p-4 text-xs font-semibold text-text-muted uppercase tracking-wider">Employee</th>
+                                        <th class="p-4 text-xs font-semibold text-text-muted uppercase tracking-wider">Check In</th>
+                                        <th class="p-4 text-xs font-semibold text-text-muted uppercase tracking-wider">Check Out</th>
+                                        <th class="p-4 text-xs font-semibold text-text-muted uppercase tracking-wider">Work Hours</th>
+                                        <th class="p-4 text-xs font-semibold text-text-muted uppercase tracking-wider">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-border" id="attendance-tbody">
+                                    <tr>
+                                        <td colspan="5" class="p-8 text-center text-slate-500">Loading attendance data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMEOFF -->
+                <div id="view-timeoff" class="view-container flex-col h-full">
+                    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 bg-surface p-6 rounded-xl border border-border shadow-sm">
+                        <button id="btn-new-timeoff" class="bg-primary text-white text-sm font-medium py-2 px-6 rounded-md hover:bg-primary-hover transition-colors shadow-sm order-2 sm:order-1">
+                            Request Time Off
+                        </button>
+                        
+                        <div class="flex gap-8 sm:gap-12 order-1 sm:order-2 w-full sm:w-auto">
+                            <div class="text-left sm:text-center">
+                                <p class="text-sm font-semibold text-primary mb-1">Paid time Off</p>
+                                <p class="text-2xl font-bold text-text-main">24 <span class="text-xs font-normal text-text-muted">Days Available</span></p>
+                            </div>
+                            <div class="text-left sm:text-center">
+                                <p class="text-sm font-semibold text-text-main mb-1">Sick time off</p>
+                                <p class="text-2xl font-bold text-text-main">07 <span class="text-xs font-normal text-text-muted">Days Available</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-xl border border-border shadow-sm p-6 flex-1 overflow-y-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <div>
+                                <h4 class="font-bold text-sm mb-3 text-text-main">July 2026</h4>
+                                <div class="grid grid-cols-7 text-center text-xs text-text-muted mb-2 font-semibold">
+                                    <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                                </div>
+                                <div class="grid grid-cols-7 text-center text-sm gap-y-1">
+                                    <div></div><div></div><div></div>
+                                    <div class="py-1 text-text-main">1</div><div class="py-1 text-text-main">2</div><div class="py-1 text-text-muted">3</div><div class="py-1 text-text-muted">4</div>
+                                    <div class="py-1 text-text-main">5</div><div class="py-1 text-text-main">6</div><div class="py-1 text-text-main">7</div><div class="py-1 text-text-main">8</div>
+                                    <div class="py-1 text-text-main">9</div><div class="py-1 text-text-muted">10</div><div class="py-1 text-text-muted">11</div>
+                                    <div class="py-1 text-text-main">12</div><div class="py-1 text-text-main">13</div><div class="py-1 text-text-main">14</div><div class="py-1 bg-primary/10 text-primary font-bold rounded">15</div>
+                                    <div class="py-1 text-text-main">16</div><div class="py-1 text-text-muted">17</div><div class="py-1 text-text-muted">18</div>
+                                    <div class="py-1 text-text-main">19</div><div class="py-1 text-text-main">20</div><div class="py-1 text-text-main">21</div><div class="py-1 text-text-main">22</div>
+                                    <div class="py-1 text-text-main">23</div><div class="py-1 text-text-muted">24</div><div class="py-1 text-text-muted">25</div>
+                                    <div class="py-1 text-text-main">26</div><div class="py-1 text-text-main">27</div><div class="py-1 text-text-main">28</div><div class="py-1 text-text-main">29</div>
+                                    <div class="py-1 text-text-main">30</div><div class="py-1 text-text-muted">31</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAYROLL -->
+                <div id="view-payroll" class="view-container flex-col h-full">
+                    <div class="bg-surface rounded-xl border border-border shadow-sm p-10 flex-1 flex flex-col items-center justify-center text-center max-w-xl mx-auto my-auto">
+                        <div class="w-16 h-16 rounded-2xl bg-primary-light flex items-center justify-center mb-5">
+                            <span class="material-symbols-outlined text-[32px] text-primary">payments</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-text-main mb-2">Payroll</h3>
+                        <p class="text-sm text-text-muted leading-relaxed mb-1">Your payslips, salary breakdown, and tax documents will show up here once payroll is set up by HR.</p>
+                        <span class="inline-block mt-4 text-[11px] font-semibold text-warning bg-warning/10 px-3 py-1 rounded-full uppercase tracking-wider">Coming Soon</span>
+                    </div>
+                </div>
+
+                <!-- DOCUMENTS -->
+                <div id="view-documents" class="view-container flex-col h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-text-main">Documents</h3>
+                        <button class="bg-primary text-white text-sm font-medium py-2 px-5 rounded-md hover:bg-primary-hover transition-colors shadow-sm flex items-center gap-2" onclick="showToast('Upload feature coming soon', 'info')">
+                            <span class="material-symbols-outlined text-[18px]">upload</span> Upload
+                        </button>
+                    </div>
+                    <div class="bg-surface rounded-xl border border-dashed border-border shadow-sm p-10 flex-1 flex flex-col items-center justify-center text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+                            <span class="material-symbols-outlined text-[32px] text-text-light">folder_open</span>
+                        </div>
+                        <h4 class="font-semibold text-text-main mb-1">No documents yet</h4>
+                        <p class="text-sm text-text-muted max-w-sm">Offer letters, ID proofs, and HR policy documents shared with you will appear here.</p>
+                    </div>
+                </div>
+
+                <!-- REPORTS -->
+                <div id="view-reports" class="view-container flex-col h-full">
+                    <h3 class="text-lg font-bold text-text-main mb-6">Reports</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+                        <div class="bg-surface rounded-xl border border-border shadow-sm p-5">
+                            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">This Month</p>
+                            <p class="text-2xl font-bold text-text-main">142 <span class="text-xs font-normal text-text-muted">hrs logged</span></p>
+                        </div>
+                        <div class="bg-surface rounded-xl border border-border shadow-sm p-5">
+                            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Leaves Taken</p>
+                            <p class="text-2xl font-bold text-text-main">4 <span class="text-xs font-normal text-text-muted">this year</span></p>
+                        </div>
+                        <div class="bg-surface rounded-xl border border-border shadow-sm p-5">
+                            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">Attendance</p>
+                            <p class="text-2xl font-bold text-text-main">95 <span class="text-xs font-normal text-text-muted">% this month</span></p>
+                        </div>
+                    </div>
+                    <div class="bg-surface rounded-xl border border-border shadow-sm p-10 flex-1 flex flex-col items-center justify-center text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-primary-light flex items-center justify-center mb-5">
+                            <span class="material-symbols-outlined text-[32px] text-primary">bar_chart</span>
+                        </div>
+                        <h4 class="font-semibold text-text-main mb-1">Detailed reports are on the way</h4>
+                        <p class="text-sm text-text-muted max-w-sm">Attendance trends, leave history, and performance summaries will be charted here.</p>
+                        <span class="inline-block mt-4 text-[11px] font-semibold text-warning bg-warning/10 px-3 py-1 rounded-full uppercase tracking-wider">Coming Soon</span>
+                    </div>
+                </div>
+
+                <!-- SETTINGS / MY PROFILE -->
+                <div id="view-settings" class="view-container flex-col h-full">
+                    <h3 class="text-2xl font-bold text-text-main mb-6">My Profile</h3>
+                    
+                    <div class="bg-surface rounded-xl border border-border shadow-sm overflow-hidden mb-6 flex-shrink-0">
+                        <div class="p-6 flex items-center gap-5 border-b border-border bg-slate-50">
+                            <div class="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-2xl border-4 border-white shadow-sm" id="settings-avatar">?</div>
+                            <div>
+                                <h2 class="font-bold text-text-main text-xl" id="settings-name">Loading...</h2>
+                                <p class="text-sm text-text-muted mt-0.5" id="settings-designation">--</p>
+                                <div class="mt-2 flex items-center gap-2">
+                                    <span class="inline-block text-[10px] font-bold text-primary bg-primary-light px-2.5 py-1 rounded border border-blue-200 uppercase tracking-wider" id="settings-role">Employee</span>
+                                    <span class="inline-block text-[10px] font-bold text-text-muted bg-slate-100 px-2.5 py-1 rounded border border-border uppercase tracking-wider" id="settings-dept-badge">Dept</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inner Profile Tabs -->
+                    <div class="border-b border-border overflow-x-auto no-scrollbar mb-6 flex-shrink-0">
+                        <div class="flex gap-8 w-max px-2">
+                            <button onclick="switchProfileTab('prof-private', this)" class="profile-tab-btn pb-3 text-sm font-semibold border-b-2 border-primary text-primary transition-colors">Private Info</button>
+                            <button onclick="switchProfileTab('prof-bank', this)" class="profile-tab-btn pb-3 text-sm font-semibold border-b-2 border-transparent text-text-muted hover:text-text-main transition-colors">Bank Details</button>
+                            <button onclick="switchProfileTab('prof-pan', this)" class="profile-tab-btn pb-3 text-sm font-semibold border-b-2 border-transparent text-text-muted hover:text-text-main transition-colors">PAN & UAN</button>
+                            <button onclick="switchProfileTab('prof-salary', this)" class="profile-tab-btn pb-3 text-sm font-semibold border-b-2 border-transparent text-text-muted hover:text-text-main transition-colors">Salary Info</button>
+                            <button onclick="switchProfileTab('prof-resume', this)" class="profile-tab-btn pb-3 text-sm font-semibold border-b-2 border-transparent text-text-muted hover:text-text-main transition-colors">Resume & Skills</button>
+                            <button onclick="switchProfileTab('prof-about', this)" class="profile-tab-btn pb-3 text-sm font-semibold border-b-2 border-transparent text-text-muted hover:text-text-main transition-colors">About & Experience</button>
+                        </div>
+                    </div>
+
+                    <!-- Profile Content Panels -->
+                    <div class="flex-1 overflow-y-auto pb-6">
+                        
+                        <!-- Panel: Private Info -->
+                        <div id="prof-private" class="profile-panel block">
+                            <div class="bg-surface rounded-xl border border-border shadow-sm">
+                                <div class="p-4 border-b border-border bg-slate-50 rounded-t-xl flex justify-between items-center">
+                                    <h4 class="font-semibold text-text-main">Personal Information</h4>
+                                </div>
+                                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Date of Birth</label>
+                                        <input type="date" class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50" value="1995-08-15">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Personal Email</label>
+                                        <input type="email" class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50" placeholder="e.g. name@personal.com">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Gender</label>
+                                        <select class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50">
+                                            <option value="Male" id="prof-gender-male">Male</option>
+                                            <option value="Female" id="prof-gender-female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Nationality</label>
+                                        <input type="text" class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50" value="Indian">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Marital Status</label>
+                                        <select class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50">
+                                            <option value="Single">Single</option>
+                                            <option value="Married">Married</option>
+                                        </select>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Full Address</label>
+                                        <textarea class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50" rows="3" placeholder="Enter your full residential address..."></textarea>
+                                    </div>
+                                    <div class="md:col-span-2 flex justify-end">
+                                        <button class="bg-primary text-white text-sm font-medium py-2 px-6 rounded-md hover:bg-primary-hover transition-colors shadow-sm" onclick="showToast('Profile updated', 'success')">Save Changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel: Bank Details -->
+                        <div id="prof-bank" class="profile-panel hidden">
+                            <div class="bg-surface rounded-xl border border-border shadow-sm">
+                                <div class="p-4 border-b border-border bg-slate-50 rounded-t-xl flex justify-between items-center">
+                                    <h4 class="font-semibold text-text-main">Bank Account Details</h4>
+                                </div>
+                                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Bank Name</label>
+                                        <input type="text" class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50" placeholder="e.g. HDFC Bank">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Account Number</label>
+                                        <input type="password" class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50" placeholder="Enter Account Number">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">IFSC Code</label>
+                                        <input type="text" class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50 uppercase" placeholder="e.g. HDFC0001234">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <p class="text-xs text-warning bg-warning/10 p-3 rounded border border-warning/20 font-medium flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[16px]">info</span> These details are used for salary processing. Verify carefully.
+                                        </p>
+                                    </div>
+                                    <div class="md:col-span-2 flex justify-end">
+                                        <button class="bg-primary text-white text-sm font-medium py-2 px-6 rounded-md hover:bg-primary-hover transition-colors shadow-sm" onclick="showToast('Bank details submitted for review', 'success')">Save Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel: PAN & UAN -->
+                        <div id="prof-pan" class="profile-panel hidden">
+                            <div class="bg-surface rounded-xl border border-border shadow-sm">
+                                <div class="p-4 border-b border-border bg-slate-50 rounded-t-xl flex justify-between items-center">
+                                    <h4 class="font-semibold text-text-main">Tax & Legal Identifiers</h4>
+                                </div>
+                                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">Employee ID (Code)</label>
+                                        <input type="text" id="prof-pan-empid" class="w-full border border-border rounded-md px-3 py-2 text-sm bg-slate-100 text-text-muted cursor-not-allowed font-mono" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">PAN Number</label>
+                                        <input type="text" class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50 uppercase font-mono" placeholder="ABCDE1234F">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-text-light uppercase tracking-wider mb-1.5">UAN (PF Number)</label>
+                                        <input type="text" class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50 font-mono" placeholder="100XXXXXXXXX">
+                                    </div>
+                                    <div class="md:col-span-2 flex justify-end">
+                                        <button class="bg-primary text-white text-sm font-medium py-2 px-6 rounded-md hover:bg-primary-hover transition-colors shadow-sm" onclick="showToast('Tax IDs updated', 'success')">Save Identifiers</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel: Salary Info -->
+                        <div id="prof-salary" class="profile-panel hidden">
+                            <div class="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
+                                <div class="p-4 border-b border-border bg-slate-50 flex justify-between items-center">
+                                    <h4 class="font-semibold text-text-main">Salary Slips</h4>
+                                </div>
+                                <div class="p-6">
+                                    <div class="border border-border rounded-lg overflow-hidden">
+                                        <table class="w-full text-left">
+                                            <thead class="bg-slate-50 border-b border-border">
+                                                <tr>
+                                                    <th class="p-3 text-xs font-semibold text-text-muted uppercase">Month / Year</th>
+                                                    <th class="p-3 text-xs font-semibold text-text-muted uppercase">Status</th>
+                                                    <th class="p-3 text-xs font-semibold text-text-muted uppercase text-right">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-border">
+                                                <tr class="hover:bg-slate-50">
+                                                    <td class="p-3 text-sm font-medium text-text-main">June 2026</td>
+                                                    <td class="p-3 text-sm"><span class="text-xs font-semibold text-success bg-success/10 px-2 py-1 rounded border border-success/20">Processed</span></td>
+                                                    <td class="p-3 text-right">
+                                                        <button class="text-primary hover:underline text-sm font-medium" onclick="showToast('Downloading Payslip...', 'info')">View Payslip</button>
+                                                    </td>
+                                                </tr>
+                                                <tr class="hover:bg-slate-50">
+                                                    <td class="p-3 text-sm font-medium text-text-main">May 2026</td>
+                                                    <td class="p-3 text-sm"><span class="text-xs font-semibold text-success bg-success/10 px-2 py-1 rounded border border-success/20">Processed</span></td>
+                                                    <td class="p-3 text-right">
+                                                        <button class="text-primary hover:underline text-sm font-medium" onclick="showToast('Downloading Payslip...', 'info')">View Payslip</button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <p class="text-xs text-text-muted mt-4">* Salary components and structures can only be modified by HR.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel: Resume & Skills -->
+                        <div id="prof-resume" class="profile-panel hidden space-y-6">
+                            <!-- Resume -->
+                            <div class="bg-surface rounded-xl border border-border shadow-sm">
+                                <div class="p-4 border-b border-border bg-slate-50 rounded-t-xl">
+                                    <h4 class="font-semibold text-text-main">Resume / CV</h4>
+                                </div>
+                                <div class="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 bg-red-50 text-red-500 rounded-lg flex items-center justify-center border border-red-100">
+                                            <span class="material-symbols-outlined">picture_as_pdf</span>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-text-main text-sm">Resume_Final.pdf</h5>
+                                            <p class="text-xs text-text-muted mt-0.5">Uploaded on Jul 01, 2026</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2 w-full md:w-auto">
+                                        <button class="flex-1 md:flex-none border border-border bg-white text-text-main text-sm font-medium py-2 px-4 rounded hover:bg-slate-50 transition-colors" onclick="showToast('Opening preview...', 'info')">Preview</button>
+                                        <button class="flex-1 md:flex-none border border-border bg-white text-text-main text-sm font-medium py-2 px-4 rounded hover:bg-slate-50 transition-colors" onclick="showToast('Downloading...', 'info')">Download</button>
+                                        <button class="flex-1 md:flex-none bg-primary text-white text-sm font-medium py-2 px-4 rounded hover:bg-primary-hover transition-colors shadow-sm">Upload New</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Skills -->
+                            <div class="bg-surface rounded-xl border border-border shadow-sm">
+                                <div class="p-4 border-b border-border bg-slate-50 rounded-t-xl flex justify-between items-center">
+                                    <h4 class="font-semibold text-text-main">Skills</h4>
+                                    <button class="text-primary hover:text-primary-hover text-sm font-medium flex items-center gap-1" onclick="showToast('Add Skill dialogue opened', 'info')">
+                                        <span class="material-symbols-outlined text-[18px]">add</span> Add Skill
+                                    </button>
+                                </div>
+                                <div class="p-6">
+                                    <div class="flex flex-wrap gap-2 mb-2">
+                                        <span class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2">React <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-blue-900">close</span></span>
+                                        <span class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2">Node <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-blue-900">close</span></span>
+                                        <span class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2">Java <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-blue-900">close</span></span>
+                                        <span class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2">Python <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-blue-900">close</span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Certifications -->
+                            <div class="bg-surface rounded-xl border border-border shadow-sm">
+                                <div class="p-4 border-b border-border bg-slate-50 rounded-t-xl flex justify-between items-center">
+                                    <h4 class="font-semibold text-text-main">Certifications</h4>
+                                    <button class="text-primary hover:text-primary-hover text-sm font-medium flex items-center gap-1" onclick="showToast('Add Certificate dialogue opened', 'info')">
+                                        <span class="material-symbols-outlined text-[18px]">add</span> Add Certificate
+                                    </button>
+                                </div>
+                                <div class="p-6">
+                                    <ul class="space-y-4">
+                                        <li class="flex items-start gap-4">
+                                            <div class="w-10 h-10 bg-orange-50 text-orange-500 rounded-lg flex items-center justify-center shrink-0 border border-orange-100">
+                                                <span class="material-symbols-outlined">workspace_premium</span>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-bold text-text-main text-sm">AWS Certified Solutions Architect</h5>
+                                                <p class="text-xs text-text-muted mt-0.5">Amazon Web Services (Issued: 2024)</p>
+                                            </div>
+                                        </li>
+                                        <li class="flex items-start gap-4">
+                                            <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center shrink-0 border border-blue-100">
+                                                <span class="material-symbols-outlined">workspace_premium</span>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-bold text-text-main text-sm">Microsoft Certified: Azure Fundamentals</h5>
+                                                <p class="text-xs text-text-muted mt-0.5">Microsoft (Issued: 2023)</p>
+                                            </div>
+                                        </li>
+                                        <li class="flex items-start gap-4">
+                                            <div class="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-lg flex items-center justify-center shrink-0 border border-emerald-100">
+                                                <span class="material-symbols-outlined">school</span>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-bold text-text-main text-sm">NPTEL Cloud Computing / Coursera Deep Learning</h5>
+                                                <p class="text-xs text-text-muted mt-0.5">Various Institutions</p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel: About & Experience -->
+                        <div id="prof-about" class="profile-panel hidden space-y-6">
+                            <!-- About Me -->
+                            <div class="bg-surface rounded-xl border border-border shadow-sm">
+                                <div class="p-4 border-b border-border bg-slate-50 rounded-t-xl">
+                                    <h4 class="font-semibold text-text-main">About Me</h4>
+                                </div>
+                                <div class="p-6">
+                                    <textarea class="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary bg-slate-50 resize-y" rows="4">I am a passionate software engineer with a strong background in building scalable web applications. Dedicated to continuous learning and team collaboration.</textarea>
+                                    <div class="mt-3 flex justify-end">
+                                        <button class="bg-primary text-white text-sm font-medium py-1.5 px-5 rounded-md hover:bg-primary-hover transition-colors shadow-sm" onclick="showToast('About section updated', 'success')">Save Bio</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Experience Timeline -->
+                            <div class="bg-surface rounded-xl border border-border shadow-sm">
+                                <div class="p-4 border-b border-border bg-slate-50 rounded-t-xl flex justify-between items-center">
+                                    <h4 class="font-semibold text-text-main">Job Experience</h4>
+                                    <button class="text-primary hover:text-primary-hover text-sm font-medium flex items-center gap-1" onclick="showToast('Experience dialogue opened', 'info')">
+                                        <span class="material-symbols-outlined text-[18px]">add</span> Add Expreience
+                                    </button>
+                                </div>
+                                <div class="p-6 pb-2">
+                                    <div class="border-l-2 border-border ml-3 pl-6 space-y-8 relative">
+                                        
+                                        <div class="relative">
+                                            <div class="absolute -left-[31px] top-1 w-3.5 h-3.5 bg-primary rounded-full ring-4 ring-white"></div>
+                                            <h5 class="font-bold text-text-main text-sm">Senior Software Engineer</h5>
+                                            <p class="text-xs text-primary font-medium mt-0.5">EnterpriseHR <span class="text-text-muted font-normal">| 2026 - Present</span></p>
+                                            <p class="text-xs text-text-muted mt-2 leading-relaxed">Leading the frontend architecture and building scalable enterprise tools.</p>
+                                        </div>
+
+                                        <div class="relative">
+                                            <div class="absolute -left-[31px] top-1 w-3.5 h-3.5 bg-slate-300 rounded-full ring-4 ring-white"></div>
+                                            <h5 class="font-bold text-text-main text-sm">Software Engineer</h5>
+                                            <p class="text-xs text-primary font-medium mt-0.5">TechCorp India <span class="text-text-muted font-normal">| 2023 - 2026</span></p>
+                                            <p class="text-xs text-text-muted mt-2 leading-relaxed">Developed microservices in Node.js and improved database query performance by 40%.</p>
+                                        </div>
+
+                                        <div class="relative">
+                                            <div class="absolute -left-[31px] top-1 w-3.5 h-3.5 bg-slate-300 rounded-full ring-4 ring-white"></div>
+                                            <h5 class="font-bold text-text-main text-sm">Junior Developer</h5>
+                                            <p class="text-xs text-primary font-medium mt-0.5">Startup Inc <span class="text-text-muted font-normal">| 2021 - 2023</span></p>
+                                            <p class="text-xs text-text-muted mt-2 leading-relaxed">Maintained legacy systems and migrated frontend from Angular to React.</p>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-backdrop" class="hidden fixed inset-0 bg-text-main/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div id="timeoff-modal" class="hidden bg-surface rounded-xl shadow-dropdown w-full max-w-md overflow-hidden animate-fade-in border border-border">
+            <div class="flex justify-between items-center p-4 border-b border-border">
+                <h3 class="font-semibold text-text-main">Time off Type Request</h3>
+                <button id="btn-close-modal" class="text-text-muted hover:text-text-main transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            
+            <div class="p-6 flex flex-col gap-5">
+                <div class="flex items-center">
+                    <span class="w-32 text-sm text-text-main font-medium">Employee</span>
+                    <span class="text-sm font-semibold text-primary" id="timeoff-emp-name">Loading...</span>
+                </div>
+                
+                <div class="flex items-center">
+                    <span class="w-32 text-sm text-text-main font-medium">Time off Type</span>
+                    <select class="flex-1 bg-surface border border-border rounded-md text-sm p-2 text-primary font-medium focus:outline-none focus:ring-1 focus:ring-primary">
+                        <option>Paid time off</option>
+                        <option>Sick Leave</option>
+                        <option>Unpaid Leaves</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center">
+                    <span class="w-32 text-sm text-text-main font-medium">Validity Period</span>
+                    <div class="flex-1 flex items-center gap-2">
+                        <input type="date" class="w-full bg-surface border border-border rounded text-sm p-1 text-primary font-medium focus:outline-none cursor-pointer">
+                        <span class="text-xs text-text-muted font-medium">To</span>
+                        <input type="date" class="w-full bg-surface border border-border rounded text-sm p-1 text-primary font-medium focus:outline-none cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="flex items-center mt-2">
+                    <span class="w-32 text-sm text-text-main font-medium">Attachment:</span>
+                    <button class="w-8 h-8 flex items-center justify-center bg-primary rounded-md text-white hover:bg-primary-hover transition-colors shadow-sm" onclick="showToast('Upload dialogue opened', 'info')">
+                        <span class="material-symbols-outlined text-[18px]">upload</span>
+                    </button>
+                    <span class="text-xs text-text-muted ml-3">(For sick leave certificate)</span>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-border flex gap-3">
+                <button class="bg-primary text-white text-sm font-medium py-2 px-6 rounded-md hover:bg-primary-hover transition-colors shadow-sm" id="btn-close-modal-submit" onclick="showToast('Leave request submitted', 'success')">
+                    Submit
+                </button>
+                <button id="btn-discard-modal" class="bg-surface border border-border text-text-main text-sm font-medium py-2 px-6 rounded-md hover:bg-slate-50 transition-colors">
+                    Discard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getDatabase, ref, get, child, set, update, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        // IMPORTANT: ADD YOUR REAL FIREBASE CONFIG HERE
+        const firebaseConfig = {
+  apiKey: "AIzaSyBC9VhbfPtSgxb-EsPR-BZFcoHmTQUZSdA",
+  authDomain: "hrms-e48e9.firebaseapp.com",
+  databaseURL: "https://hrms-e48e9-default-rtdb.firebaseio.com",
+  projectId: "hrms-e48e9",
+  storageBucket: "hrms-e48e9.firebasestorage.app",
+  messagingSenderId: "271673833727",
+  appId: "1:271673833727:web:55f73e1ff925cfcc9034ca",
+  measurementId: "G-BL4R6ES7X3"
+};
+
+        let app, auth, database;
+        let currentUserData = null;
+        let currentUserId = null;
+
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colorClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning' : 'bg-primary';
+            const icon = type === 'success' ? 'check_circle' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info';
+            
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white ${colorClass} transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<span class="material-symbols-outlined text-[20px]">${icon}</span> ${message}`;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        try {
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                database = getDatabase(app);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        if(auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    const dbRef = ref(database);
+                    get(child(dbRef, `users/${user.uid}`)).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            currentUserData = snapshot.val();
+                            updateProfileUI(currentUserData);
+                            setupAttendanceLogic();
+                            loadAttendanceData();
+                        }
+                    });
+                } else {
+                    const sessionTime = localStorage.getItem("hrms_session");
+                    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+                    const hasLocalSession = sessionTime && (Date.now() - parseInt(sessionTime) < THIRTY_DAYS_MS);
+
+                    if (hasLocalSession && !window.__authGraceUsed) {
+                        window.__authGraceUsed = true;
+                        setTimeout(() => {
+                            if (!auth.currentUser) {
+                                localStorage.clear();
+                                window.location.replace('auth.html');
+                            }
+                        }, 1500);
+                    } else {
+                        localStorage.clear();
+                        window.location.replace('auth.html');
+                    }
+                }
+            });
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            if(auth) {
+                signOut(auth).then(() => {
+                    localStorage.clear();
+                    window.location.replace('auth.html');
+                });
+            } else {
+                localStorage.clear();
+                window.location.replace('auth.html');
+            }
+        });
+
+        function updateProfileUI(data) {
+            const name = data.fullName || 'User';
+            const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+            const dept = data.department || 'General';
+            
+            document.getElementById('sidebar-user-name').innerText = name;
+            document.getElementById('sidebar-user-role').innerText = data.role || 'Employee';
+            document.getElementById('sidebar-user-avatar').innerText = initials;
+            document.getElementById('header-user-avatar').innerText = initials;
+            document.getElementById('timeoff-emp-name').innerText = name;
+
+            // Settings / My Profile Header
+            document.getElementById('settings-avatar').innerText = initials;
+            document.getElementById('settings-name').innerText = name;
+            document.getElementById('settings-designation').innerText = data.designation || 'Employee';
+            document.getElementById('settings-role').innerText = data.role || 'employee';
+            document.getElementById('settings-dept-badge').innerText = dept;
+            
+            // Profile Panes
+            const safelySet = (id, val) => { const el = document.getElementById(id); if(el) { el.tagName === 'INPUT' ? el.value = val : el.innerText = val; }};
+            safelySet('prof-pan-empid', data.employeeId || '--');
+            
+            if(data.gender === 'Female') document.getElementById('prof-gender-female').selected = true;
+            else document.getElementById('prof-gender-male').selected = true;
+        }
+
+        function setupAttendanceLogic() {
+            if(!database || !currentUserId) return;
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            const attRef = ref(database, `attendance/${dateStr}/${currentUserId}`);
+            
+            get(attRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    if(data.checkIn && !data.checkOut) {
+                        resumeTimer(data.checkIn);
+                    } else if (data.checkOut) {
+                        setCheckoutUI();
+                    }
+                }
+            });
+
+            document.getElementById('action-checkin').addEventListener('click', () => {
+                const now = Date.now();
+                set(ref(database, `attendance/${dateStr}/${currentUserId}`), {
+                    checkIn: now,
+                    userName: currentUserData.fullName,
+                    userId: currentUserId
+                }).then(() => resumeTimer(now));
+            });
+
+            document.getElementById('action-checkout').addEventListener('click', () => {
+                const now = Date.now();
+                update(ref(database, `attendance/${dateStr}/${currentUserId}`), {
+                    checkOut: now
+                }).then(() => setCheckoutUI());
+            });
+        }
+
+        function setCheckoutUI() {
+            clearInterval(window.timerInterval);
+            document.getElementById('checkout-state').classList.add('hidden');
+            document.getElementById('checkin-dropdown').classList.add('hidden');
+            document.getElementById('header-status-dot').className = "w-2.5 h-2.5 rounded-full bg-slate-400 block";
+            document.getElementById('header-status-text').textContent = 'Completed';
+            document.getElementById('checkin-button').disabled = true;
+            
+            // Update Dashboard Widget
+            document.getElementById('widget-att-status').textContent = 'Completed';
+            document.getElementById('widget-att-status').className = 'text-2xl font-bold text-text-muted';
+            document.getElementById('widget-att-time').textContent = 'Shift ended for today';
+        }
+
+        function resumeTimer(checkInTime) {
+            const checkinState = document.getElementById('checkin-state');
+            const checkoutState = document.getElementById('checkout-state');
+            const statusDot = document.getElementById('header-status-dot');
+            const statusText = document.getElementById('header-status-text');
+            const timerEl = document.getElementById('systray-timer');
+
+            checkinState.classList.add('hidden');
+            checkoutState.classList.remove('hidden');
+            statusDot.classList.replace('bg-danger', 'bg-success');
+            statusText.textContent = 'Active';
+            document.getElementById('checkin-dropdown').classList.add('hidden');
+            
+            // Update Dashboard Widget
+            document.getElementById('widget-att-status').textContent = 'Active';
+            document.getElementById('widget-att-status').className = 'text-2xl font-bold text-success';
+            const checkInDate = new Date(checkInTime);
+            document.getElementById('widget-att-time').textContent = `Checked in at ${checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+
+            const formatTime = (totalSeconds) => {
+                const h = Math.floor(totalSeconds / 3600);
+                const m = Math.floor((totalSeconds % 3600) / 60);
+                const s = totalSeconds % 60;
+                const pad = v => String(v).padStart(2, '0');
+                return `${pad(h)}:${pad(m)}:${pad(s)}`;
+            };
+
+            window.timerInterval = setInterval(() => {
+                const secondsElapsed = Math.floor((Date.now() - checkInTime) / 1000);
+                timerEl.textContent = formatTime(secondsElapsed);
+            }, 1000);
+        }
+
+        function loadAttendanceData() {
+            if(!database) return;
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            const displayDate = today.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            
+            document.getElementById('current-date-display').innerHTML = `${displayDate} <span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span>`;
+            
+            const attRef = ref(database, `attendance/${dateStr}`);
+            onValue(attRef, (snapshot) => {
+                const tbody = document.getElementById('attendance-tbody');
+                tbody.innerHTML = '';
+                if(snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const att = childSnapshot.val();
+                        const initials = (att.userName || 'XX').split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                        
+                        const inTime = att.checkIn ? new Date(att.checkIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
+                        const outTime = att.checkOut ? new Date(att.checkOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
+                        
+                        let workHours = '-';
+                        if(att.checkIn && att.checkOut) {
+                            const diff = Math.floor((att.checkOut - att.checkIn) / (1000 * 60 * 60));
+                            workHours = `${diff}h`;
+                        } else if (att.checkIn) {
+                            workHours = 'Active';
+                        }
+
+                        const statusHtml = att.checkOut ? `<span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded border border-border">Completed</span>` : `<span class="text-xs font-semibold text-success bg-success/10 px-2 py-1 rounded border border-success/20">Active</span>`;
+
+                        const tr = `
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs border border-border">${initials}</div>
+                                        <span class="font-medium text-sm text-text-main">${att.userName}</span>
+                                    </div>
+                                </td>
+                                <td class="p-4 text-sm text-text-main font-mono">${inTime}</td>
+                                <td class="p-4 text-sm ${att.checkOut ? 'text-text-main' : 'text-text-muted'} font-mono">${outTime}</td>
+                                <td class="p-4 text-sm font-mono text-text-muted">${workHours}</td>
+                                <td class="p-4 text-sm">${statusHtml}</td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += tr;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">No attendance data for today.</td></tr>';
+                }
+            });
+        }
+
+        // Profile Inner Tabs Logic
+        window.switchProfileTab = function(tabId, btnElement) {
+            // Hide all panels
+            document.querySelectorAll('.profile-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.profile-panel').forEach(p => p.classList.remove('block'));
+            
+            // Show target panel
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('block');
+            
+            // Reset tab buttons
+            document.querySelectorAll('.profile-tab-btn').forEach(btn => {
+                btn.classList.remove('border-primary', 'text-primary');
+                btn.classList.add('border-transparent', 'text-text-muted');
+            });
+            
+            // Activate clicked button
+            btnElement.classList.remove('border-transparent', 'text-text-muted');
+            btnElement.classList.add('border-primary', 'text-primary');
+        }
+
+        // Dashboard & Sidebar View Navigation
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const viewContainers = document.querySelectorAll('.view-container');
+
+        function navigateToView(targetId) {
+            viewContainers.forEach(container => container.classList.remove('active-view'));
+            
+            const targetView = document.getElementById(targetId);
+            if (targetView) targetView.classList.add('active-view');
+
+            tabBtns.forEach(btn => {
+                if (btn.dataset.target === targetId) {
+                    btn.classList.remove('border-transparent', 'text-text-main', 'text-text-muted');
+                    btn.classList.add('border-primary', 'text-primary');
+                } else {
+                    btn.classList.remove('border-primary', 'text-primary');
+                    if(btn.dataset.target === 'view-timeoff' || btn.dataset.target === 'view-attendance') {
+                        btn.classList.add('border-transparent', 'text-text-muted');
+                    } else {
+                        btn.classList.add('border-transparent', 'text-text-main');
+                    }
+                }
+            });
+        }
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToView(btn.dataset.target);
+            });
+        });
+
+        // Sidebar & mobile navigation
+        const dashboardTabTargets = ['view-dashboard', 'view-attendance', 'view-timeoff'];
+        const mainTabsBar = document.getElementById('main-tabs');
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const mobileLinks = document.querySelectorAll('.sidebar-link-mobile');
+
+        function setSidebarActive(targetId) {
+            const effectiveTarget = dashboardTabTargets.includes(targetId) ? 'view-dashboard' : targetId;
+
+            sidebarLinks.forEach(link => {
+                const isActive = link.dataset.sidebarTarget === effectiveTarget;
+                link.classList.toggle('bg-primary-light', isActive);
+                link.classList.toggle('text-primary', isActive);
+                link.classList.toggle('text-text-muted', !isActive);
+            });
+
+            mobileLinks.forEach(link => {
+                const isActive = link.dataset.sidebarTarget === effectiveTarget;
+                link.classList.toggle('bg-primary-light', isActive);
+                link.classList.toggle('text-primary', isActive);
+                link.classList.toggle('text-text-main', !isActive);
+            });
+
+            if (mainTabsBar) {
+                mainTabsBar.classList.toggle('hidden', effectiveTarget !== 'view-dashboard');
+            }
+        }
+
+        function goToSidebarView(targetId) {
+            if (targetId === 'view-dashboard') {
+                const activeTab = document.querySelector('.tab-btn.border-primary');
+                targetId = (activeTab && dashboardTabTargets.includes(activeTab.dataset.target))
+                    ? activeTab.dataset.target
+                    : 'view-dashboard';
+            }
+            navigateToView(targetId);
+            setSidebarActive(targetId);
+            closeMobileMenu();
+        }
+
+        document.querySelectorAll('[data-sidebar-target]').forEach(el => {
+            el.addEventListener('click', () => {
+                goToSidebarView(el.dataset.sidebarTarget);
+                const dropdown = document.getElementById('profile-dropdown');
+                if (dropdown) dropdown.classList.add('hidden');
+            });
+        });
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => setSidebarActive(btn.dataset.target));
+        });
+
+        setSidebarActive('view-dashboard');
+
+        // Mobile hamburger menu
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+        const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
+        const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+
+        function openMobileMenu() {
+            mobileMenuPanel.classList.remove('hidden');
+            mobileMenuBackdrop.classList.remove('hidden');
+        }
+        function closeMobileMenu() {
+            mobileMenuPanel.classList.add('hidden');
+            mobileMenuBackdrop.classList.add('hidden');
+        }
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMobileMenu);
+        if (mobileMenuBackdrop) mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+        if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', () => document.getElementById('logout-btn').click());
+
+        const setupDropdown = (btnId, dropdownId) => {
+            const btn = document.getElementById(btnId);
+            const dropdown = document.getElementById(dropdownId);
+            if (!btn || !dropdown) return;
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.shadow-dropdown').forEach(d => {
+                    if (d.id !== dropdownId) d.classList.add('hidden');
+                });
+                dropdown.classList.toggle('hidden');
+            });
+        };
+
+        setupDropdown('checkin-button', 'checkin-dropdown');
+        setupDropdown('profile-button', 'profile-dropdown');
+
+        document.addEventListener('click', (e) => {
+            document.querySelectorAll('.shadow-dropdown').forEach(dropdown => {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        });
+
+        const btnNewTimeoff = document.getElementById('btn-new-timeoff');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const timeoffModal = document.getElementById('timeoff-modal');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const btnDiscardModal = document.getElementById('btn-discard-modal');
+
+        const openModal = () => {
+            modalBackdrop.classList.remove('hidden');
+            timeoffModal.classList.remove('hidden');
+        };
+
+        const closeModal = () => {
+            modalBackdrop.classList.add('hidden');
+            timeoffModal.classList.add('hidden');
+        };
+
+        if(btnNewTimeoff) btnNewTimeoff.addEventListener('click', openModal);
+        if(btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
+        if(btnDiscardModal) btnDiscardModal.addEventListener('click', closeModal);
+        
+        if(modalBackdrop) {
+            modalBackdrop.addEventListener('click', (e) => {
+                if (e.target === modalBackdrop) closeModal();
+            });
+        }
+    </script>
+</body>
+</html>

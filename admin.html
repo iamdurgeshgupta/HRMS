@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Enterprise HRMS | Admin Console</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@300,1,0,24&display=swap" rel="stylesheet"/>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#2563EB', hover: '#1D4ED8', light: '#EFF6FF' },
+                        secondary: '#1E40AF',
+                        success: { DEFAULT: '#22C55E', bg: '#DCFCE7', text: '#166534' },
+                        danger: { DEFAULT: '#EF4444', bg: '#FEE2E2', text: '#991B1B' },
+                        warning: { DEFAULT: '#F59E0B', bg: '#FEF3C7', text: '#92400E' },
+                        info: { DEFAULT: '#3B82F6', bg: '#DBEAFE', text: '#1E40AF' },
+                        background: '#F8FAFC',
+                        surface: '#FFFFFF',
+                        border: '#E2E8F0',
+                        text: { main: '#0F172A', muted: '#64748B', light: '#94A3B8' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05)',
+                        'dropdown': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+                    },
+                    spacing: { 'sidebar': '260px' },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-in-right': 'slideInRight 0.3s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideInRight: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        
+        .submenu-container { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
+        .submenu-container.open { max-height: 500px; }
+        .chevron { transition: transform 0.3s ease; }
+        .chevron.open { transform: rotate(180deg); }
+        
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+        
+        #toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+    </style>
+</head>
+
+<body class="bg-background text-text-main font-sans min-h-screen flex overflow-hidden">
+
+    <div id="toast-container"></div>
+
+    <div id="mobile-overlay" class="fixed inset-0 bg-text-main/50 z-40 hidden lg:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-sidebar bg-surface border-r border-border flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-border bg-surface shrink-0 cursor-pointer" onclick="switchView('dashboard')">
+            <div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-white font-bold text-sm shadow-sm mr-3">EH</div>
+            <div><h1 class="font-bold text-text-main text-lg leading-tight tracking-tight">EnterpriseHR</h1></div>
+            <button class="ml-auto lg:hidden text-text-muted hover:text-text-main" onclick="toggleSidebar()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1 no-scrollbar">
+            <a href="#" onclick="switchView('dashboard')" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary-light text-primary font-medium transition-colors" data-view="dashboard">
+                <span class="material-symbols-outlined text-[20px]">dashboard</span> Dashboard
+            </a>
+            
+            <p class="px-3 text-xs font-semibold text-text-light uppercase tracking-wider mb-1 mt-4">Core HR</p>
+            
+            <div>
+                <button class="nav-accordion w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-text-muted hover:text-text-main hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">group</span> Employees</div>
+                    <span class="material-symbols-outlined text-[18px] chevron">expand_more</span>
+                </button>
+                <div class="submenu-container pl-11 pr-3 flex flex-col gap-1">
+                    <a href="#" onclick="switchView('employees')" class="nav-link py-2 text-sm text-text-muted hover:text-primary transition-colors" data-view="employees">Employee List</a>
+                    <a href="#" onclick="openModal('addEmployeeModal')" class="py-2 text-sm text-text-muted hover:text-primary transition-colors">Add Employee</a>
+                </div>
+            </div>
+
+            <div>
+                <button class="nav-accordion w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-text-muted hover:text-text-main hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">event_available</span> Attendance</div>
+                    <span class="material-symbols-outlined text-[18px] chevron">expand_more</span>
+                </button>
+                <div class="submenu-container pl-11 pr-3 flex flex-col gap-1">
+                    <a href="#" onclick="switchView('attendance')" class="nav-link py-2 text-sm text-text-muted hover:text-primary transition-colors" data-view="attendance">Today's Attendance</a>
+                </div>
+            </div>
+
+            <div>
+                <button class="nav-accordion w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-text-muted hover:text-text-main hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">event_busy</span> Time Off <span id="sidebar-leave-count" class="ml-2 bg-danger text-white py-0.5 px-1.5 rounded-full text-[10px] font-bold hidden">0</span></div>
+                    <span class="material-symbols-outlined text-[18px] chevron">expand_more</span>
+                </button>
+                <div class="submenu-container pl-11 pr-3 flex flex-col gap-1">
+                    <a href="#" onclick="switchView('timeoff')" class="nav-link py-2 text-sm text-text-muted hover:text-primary transition-colors flex justify-between" data-view="timeoff">Requests</a>
+                </div>
+            </div>
+
+            <div>
+                <button class="nav-accordion w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-text-muted hover:text-text-main hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">payments</span> Payroll</div>
+                    <span class="material-symbols-outlined text-[18px] chevron">expand_more</span>
+                </button>
+                <div class="submenu-container pl-11 pr-3 flex flex-col gap-1">
+                    <a href="#" onclick="switchView('payroll')" class="nav-link py-2 text-sm text-text-muted hover:text-primary transition-colors" data-view="payroll">Payroll Dashboard</a>
+                    <a href="#" onclick="generatePayroll()" class="py-2 text-sm text-text-muted hover:text-primary transition-colors">Generate Payroll</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-border bg-surface shrink-0">
+            <button id="btn-logout" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border text-text-main hover:bg-danger.bg hover:text-danger hover:border-danger transition-all text-sm font-medium">
+                <span class="material-symbols-outlined text-[18px]">logout</span> Logout System
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 h-screen relative bg-background">
+        
+        <header class="flex items-center justify-between px-4 lg:px-8 h-16 bg-surface border-b border-border sticky top-0 z-30 flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="lg:hidden text-text-muted hover:text-text-main p-1 rounded-md hover:bg-slate-100" onclick="toggleSidebar()">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                
+                <div class="relative w-full max-w-xs md:w-96 group hidden sm:block">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-light group-focus-within:text-primary transition-colors text-[20px]">search</span>
+                    <input type="text" placeholder="Search employees, departments..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-border rounded-lg text-sm text-text-main placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-surface transition-all" />
+                    <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden md:inline-block px-1.5 py-0.5 rounded border border-slate-200 bg-white text-[10px] font-medium text-text-muted shadow-sm">⌘K</kbd>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 sm:gap-4">
+                <button class="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:bg-slate-50 hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[22px]">notifications</span>
+                </button>
+                
+                <div class="w-px h-6 bg-border mx-1 hidden sm:block"></div>
+                
+                <div class="relative">
+                    <button onclick="toggleDropdown('profileDropdown')" class="flex items-center gap-2 hover:bg-slate-50 p-1 pr-2 rounded-full border border-transparent hover:border-border transition-all">
+                        <div id="header-avatar" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs border border-border">A</div>
+                        <span id="header-name" class="hidden sm:block text-sm font-medium text-text-main">Admin</span>
+                        <span class="material-symbols-outlined text-[18px] text-text-muted">expand_more</span>
+                    </button>
+                    
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-56 bg-surface border border-border rounded-lg shadow-dropdown z-50">
+                        <div class="p-4 border-b border-border bg-slate-50/50 rounded-t-lg">
+                            <p class="text-sm font-semibold text-text-main">System Administrator</p>
+                            <p id="header-email" class="text-xs text-text-muted mt-0.5">admin@enterprisehr.com</p>
+                        </div>
+                        <div class="p-2">
+                            <a href="#" onclick="showToast('Settings opened', 'info')" class="flex items-center gap-3 px-3 py-2.5 text-sm text-text-main hover:bg-slate-50 rounded-md transition-colors"><span class="material-symbols-outlined text-[18px]">settings</span> Settings</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
+            
+            <div id="dashboard-view" class="view-section active max-w-[1600px] mx-auto w-full flex flex-col gap-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 bg-surface p-6 rounded-xl border border-border shadow-sm">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-bold text-text-main tracking-tight">Organization Overview</h2>
+                        <p class="text-sm text-text-muted mt-1">Real-time HR metrics and operations for today.</p>
+                    </div>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button onclick="openModal('addEmployeeModal')" class="flex-1 md:flex-none bg-surface border border-border text-text-main text-sm font-medium py-2 px-4 rounded-lg hover:bg-slate-50 transition-colors shadow-sm flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">person_add</span> Add Employee
+                        </button>
+                        <button onclick="generatePayroll()" class="flex-1 md:flex-none bg-primary text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">payments</span> Run Payroll
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div onclick="switchView('employees')" class="bg-surface rounded-xl border border-border shadow-card p-4 hover:border-primary hover:shadow-md transition-all cursor-pointer group">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Emp</span>
+                            <span class="material-symbols-outlined text-primary text-[20px]">groups</span>
+                        </div>
+                        <h3 id="kpi-total-emp" class="text-2xl font-bold text-text-main">0</h3>
+                    </div>
+                    <div onclick="switchView('attendance')" class="bg-surface rounded-xl border border-border shadow-card p-4 hover:border-success hover:shadow-md transition-all cursor-pointer group">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Present Today</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-success mt-1 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                        </div>
+                        <h3 id="kpi-present" class="text-2xl font-bold text-text-main">0</h3>
+                    </div>
+                    <div onclick="switchView('timeoff')" class="bg-surface rounded-xl border border-border shadow-card p-4 hover:border-warning hover:shadow-md transition-all cursor-pointer group">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Pending Leaves</span>
+                            <span class="material-symbols-outlined text-warning text-[20px]">pending_actions</span>
+                        </div>
+                        <h3 id="kpi-leaves" class="text-2xl font-bold text-warning">0</h3>
+                    </div>
+                    <div onclick="switchView('payroll')" class="bg-slate-50 rounded-xl border border-border shadow-card p-4 hover:border-primary hover:shadow-md transition-all cursor-pointer group">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Payroll Status</span>
+                            <span class="material-symbols-outlined text-success text-[20px]">check_circle</span>
+                        </div>
+                        <h3 class="text-sm font-bold text-text-main mt-2">Generated</h3>
+                        <p class="text-[10px] text-text-muted font-medium uppercase">Last Month</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 flex flex-col gap-6">
+                        <div class="bg-surface rounded-xl border border-border shadow-card flex flex-col overflow-hidden">
+                            <div class="p-5 border-b border-border flex justify-between items-center bg-slate-50/50">
+                                <h3 class="font-semibold text-text-main text-base">Pending Leave Requests</h3>
+                                <button onclick="switchView('timeoff')" class="text-sm text-primary font-medium hover:underline">View All</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="dashboard-leave-table">
+                                    <thead>
+                                        <tr class="border-b border-border">
+                                            <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Employee</th>
+                                            <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Type & Dates</th>
+                                            <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-border" id="dashboard-leave-tbody">
+                                        <tr><td colspan="3" class="py-6 text-center text-sm text-text-muted">Loading requests...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-surface rounded-xl border border-border shadow-card p-5">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-semibold text-text-main text-base">Departments</h3>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="bg-slate-50 p-3 rounded-lg border border-border flex flex-col justify-between hover:border-primary transition-colors cursor-pointer">
+                                    <span class="material-symbols-outlined text-text-muted mb-2 text-[20px]">terminal</span>
+                                    <span class="text-sm font-medium text-text-main">Engineering</span>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded-lg border border-border flex flex-col justify-between hover:border-primary transition-colors cursor-pointer">
+                                    <span class="material-symbols-outlined text-text-muted mb-2 text-[20px]">storefront</span>
+                                    <span class="text-sm font-medium text-text-main">Sales</span>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded-lg border border-border flex flex-col justify-between hover:border-primary transition-colors cursor-pointer">
+                                    <span class="material-symbols-outlined text-text-muted mb-2 text-[20px]">campaign</span>
+                                    <span class="text-sm font-medium text-text-main">Marketing</span>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded-lg border border-border flex flex-col justify-between hover:border-primary transition-colors cursor-pointer">
+                                    <span class="material-symbols-outlined text-text-muted mb-2 text-[20px]">groups</span>
+                                    <span class="text-sm font-medium text-text-main">HR Dept</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-6">
+                        <div class="bg-surface rounded-xl border border-border shadow-card flex flex-col h-[400px]">
+                            <div class="p-5 border-b border-border bg-slate-50/50 sticky top-0 rounded-t-xl">
+                                <h3 class="font-semibold text-text-main text-base">Live Activity Log</h3>
+                            </div>
+                            <div class="p-5 flex-1 overflow-y-auto no-scrollbar">
+                                <div class="relative border-l border-border ml-3 space-y-6 pb-2" id="activity-timeline">
+                                    <p class="text-sm text-text-muted">Loading activities...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="employees-view" class="view-section max-w-[1600px] mx-auto w-full">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold text-text-main">Employee Directory</h2>
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="Search by name..." class="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                        <button onclick="openModal('addEmployeeModal')" class="bg-primary text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors flex items-center gap-2 shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">add</span> Add New
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-surface rounded-xl border border-border shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-border">
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Employee</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Employee ID</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Department</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Role</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border" id="employee-table-body">
+                                <tr><td colspan="4" class="py-6 text-center text-sm text-text-muted">Loading directory...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="attendance-view" class="view-section max-w-[1600px] mx-auto w-full">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-text-main">Today's Attendance</h2>
+                        <p class="text-sm text-text-muted mt-1" id="attendance-date">Loading date...</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="bg-primary-light text-primary px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-100 transition-colors shadow-sm" onclick="showToast('Exporting to CSV...', 'success')">Export</button>
+                    </div>
+                </div>
+
+                <div class="bg-surface rounded-xl border border-border shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-border">
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Employee</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Check In</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Check Out</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border" id="attendance-table-body">
+                                <tr><td colspan="4" class="py-6 text-center text-sm text-text-muted">Loading attendance...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="timeoff-view" class="view-section max-w-[1600px] mx-auto w-full">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold text-text-main">Leave Management</h2>
+                </div>
+
+                <div class="bg-surface rounded-xl border border-border shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-border">
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Employee</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Leave Type</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase">Dates</th>
+                                    <th class="py-3 px-5 text-xs font-semibold text-text-muted uppercase text-right">Approve/Reject</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border" id="timeoff-table-body">
+                                <tr><td colspan="4" class="py-6 text-center text-sm text-text-muted">Loading requests...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="payroll-view" class="view-section max-w-[1600px] mx-auto w-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-text-main">Payroll Dashboard</h2>
+                    <button onclick="generatePayroll()" class="bg-primary text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors shadow-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">play_circle</span> Generate Payroll
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-surface rounded-xl border border-border shadow-card p-6 flex flex-col items-center justify-center text-center h-64">
+                        <div class="w-16 h-16 bg-success.bg text-success rounded-full flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-[32px]">task_alt</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-text-main">Current Month Payroll Ready</h3>
+                        <p class="text-sm text-text-muted mt-2 max-w-sm">Salaries have been calculated. Ready for disbursement.</p>
+                        <button class="mt-4 text-primary font-semibold text-sm hover:underline" onclick="showToast('Downloading reports...', 'info')">Download Bank Advice</button>
+                    </div>
+
+                    <div class="bg-surface rounded-xl border border-border shadow-card p-6">
+                        <h3 class="font-semibold text-text-main mb-4">Current Month Summary</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between border-b border-border pb-2">
+                                <span class="text-sm text-text-muted">Total Gross Salary</span>
+                                <span class="text-sm font-bold text-text-main">₹ 18,45,000</span>
+                            </div>
+                            <div class="flex justify-between border-b border-border pb-2">
+                                <span class="text-sm text-text-muted">Total Deductions (PF/Tax)</span>
+                                <span class="text-sm font-bold text-danger">- ₹ 2,47,200</span>
+                            </div>
+                            <div class="flex justify-between pt-2">
+                                <span class="text-base font-semibold text-text-main">Net Payable</span>
+                                <span class="text-lg font-bold text-success">₹ 15,97,800</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Employee Profile Modal -->
+    <div id="employeeProfileModal" class="fixed inset-0 bg-text-main/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-surface rounded-xl shadow-2xl w-full max-w-4xl border border-border transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="employeeProfileModalContent">
+            
+            <div class="flex justify-between items-center p-5 border-b border-border shrink-0 bg-slate-50 rounded-t-xl">
+                <h3 class="font-bold text-lg text-text-main flex items-center gap-2"><span class="material-symbols-outlined">person</span> Employee Profile</h3>
+                <button onclick="closeModal('employeeProfileModal')" class="text-text-muted hover:text-text-main p-1"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
+                <!-- Top Header Info -->
+                <div class="flex flex-col md:flex-row gap-6 md:items-start border-b border-border pb-8">
+                    <div id="emp-profile-avatar" class="w-24 h-24 rounded-full bg-primary text-white text-3xl font-bold flex items-center justify-center border-4 border-slate-100 shadow-sm shrink-0">--</div>
+                    <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 w-full">
+                        <div>
+                            <h2 id="emp-profile-name" class="text-2xl sm:text-3xl font-bold text-text-main mb-3">Loading...</h2>
+                            <div class="space-y-2">
+                                <div class="flex pb-1"><span class="w-24 text-sm text-text-muted font-medium">Login ID</span> <span id="emp-profile-id" class="text-sm font-semibold text-text-main">--</span></div>
+                                <div class="flex pb-1"><span class="w-24 text-sm text-text-muted font-medium">Email</span> <span id="emp-profile-email" class="text-sm font-semibold text-text-main">--</span></div>
+                                <div class="flex pb-1"><span class="w-24 text-sm text-text-muted font-medium">Mobile</span> <span id="emp-profile-mobile" class="text-sm font-semibold text-text-main">--</span></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="space-y-2 sm:mt-11">
+                                <div class="flex pb-1"><span class="w-28 text-sm text-text-muted font-medium">Company</span> <span id="emp-profile-company" class="text-sm font-semibold text-text-main">--</span></div>
+                                <div class="flex pb-1"><span class="w-28 text-sm text-text-muted font-medium">Department</span> <span id="emp-profile-dept" class="text-sm font-semibold text-text-main">--</span></div>
+                                <div class="flex pb-1"><span class="w-28 text-sm text-text-muted font-medium">Manager</span> <span id="emp-profile-manager" class="text-sm font-semibold text-text-main">--</span></div>
+                                <div class="flex pb-1"><span class="w-28 text-sm text-text-muted font-medium">Location</span> <span id="emp-profile-location" class="text-sm font-semibold text-text-main">--</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-border mt-6 overflow-x-auto no-scrollbar">
+                    <button id="btn-tab-resume" onclick="switchProfileTab('resume')" class="px-6 py-2.5 border-b-2 font-semibold text-sm border-primary text-primary transition-colors whitespace-nowrap">Resume</button>
+                    <button id="btn-tab-private" onclick="switchProfileTab('private')" class="px-6 py-2.5 border-b-2 font-semibold text-sm border-transparent text-text-muted hover:text-text-main transition-colors whitespace-nowrap">Private Info</button>
+                    <button id="btn-tab-salary" onclick="switchProfileTab('salary')" class="px-6 py-2.5 border-b-2 font-semibold text-sm border-transparent text-text-muted hover:text-text-main transition-colors whitespace-nowrap">Salary Info</button>
+                </div>
+
+                <!-- Tab Contents -->
+                <!-- Resume Tab -->
+                <div id="tab-resume" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="font-bold text-lg border-b border-border pb-2 mb-3 text-text-main">About</h3>
+                            <p class="text-sm text-text-muted leading-relaxed">Highly motivated and result-oriented professional with experience in executing core tasks. Always willing to learn new technologies and apply them to streamline internal processes.</p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg border-b border-border pb-2 mb-3 text-text-main">What I love about my job</h3>
+                            <p class="text-sm text-text-muted leading-relaxed">The collaborative environment and the ability to work on challenging projects that make a direct impact on the organization's growth.</p>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="border border-border rounded-xl p-5 bg-slate-50">
+                            <h3 class="font-bold text-text-main border-b border-border pb-2 mb-4">Skills</h3>
+                            <div class="flex flex-wrap gap-2 mb-5">
+                                <span class="px-3 py-1 bg-white border border-border rounded text-xs font-medium text-text-main shadow-sm">Leadership</span>
+                                <span class="px-3 py-1 bg-white border border-border rounded text-xs font-medium text-text-main shadow-sm">Project Management</span>
+                                <span class="px-3 py-1 bg-white border border-border rounded text-xs font-medium text-text-main shadow-sm">Agile</span>
+                            </div>
+                            <button class="text-primary text-sm font-semibold hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">add</span> Add Skills</button>
+                        </div>
+                        <div class="border border-border rounded-xl p-5 bg-slate-50">
+                            <h3 class="font-bold text-text-main border-b border-border pb-2 mb-4">Certifications</h3>
+                            <div class="mb-5 bg-white p-3 border border-border rounded shadow-sm">
+                                <p class="text-sm font-semibold text-text-main">Advanced Management Course</p>
+                                <p class="text-xs text-text-muted mt-1">Issued Jan 2024</p>
+                            </div>
+                            <button class="text-primary text-sm font-semibold hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">add</span> Add Certification</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Private Info Tab -->
+                <div id="tab-private" class="mt-6 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="border border-border rounded-xl p-5 space-y-4">
+                            <h3 class="font-bold text-lg border-b border-border pb-2 text-text-main">Personal Details</h3>
+                            <div class="flex justify-between"><span class="text-sm text-text-muted">Date of Joining</span> <span id="emp-private-doj" class="text-sm font-medium text-text-main">--</span></div>
+                            <div class="flex justify-between"><span class="text-sm text-text-muted">Gender</span> <span id="emp-private-gender" class="text-sm font-medium text-text-main">--</span></div>
+                            <div class="flex justify-between"><span class="text-sm text-text-muted">Employment Type</span> <span id="emp-private-type" class="text-sm font-medium text-text-main">--</span></div>
+                            
+                        </div>
+                        <div class="border border-border rounded-xl p-5 space-y-4">
+                            <h3 class="font-bold text-lg border-b border-border pb-2 text-text-main">Emergency Contact</h3>
+                            <p class="text-sm text-text-muted">No emergency contact information added for this employee.</p>
+                            <button class="px-4 py-2 mt-2 bg-slate-100 border border-border rounded text-sm font-medium hover:bg-slate-200 transition-colors">Request Info Update</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Info Tab -->
+                <div id="tab-salary" class="mt-6 hidden">
+                    <div class="border border-border rounded-xl p-6 bg-slate-50 flex flex-col md:flex-row gap-8 items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-sm font-bold text-text-muted uppercase tracking-wider mb-1">Total CTC</h3>
+                            <p class="text-3xl font-bold text-text-main">₹ 12,00,000 <span class="text-sm font-normal text-text-muted">/ year</span></p>
+                        </div>
+                        <div class="flex gap-4">
+                            <button class="px-4 py-2 bg-white border border-border rounded-lg text-sm font-semibold text-text-main hover:bg-slate-100 shadow-sm flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">edit</span> Revise Salary
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="border border-border rounded-xl p-5">
+                            <h3 class="font-bold text-text-main border-b border-border pb-2 mb-4">Earnings</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between"><span class="text-sm text-text-muted">Basic Salary</span> <span class="text-sm font-medium text-text-main">₹ 50,000.00</span></div>
+                                <div class="flex justify-between"><span class="text-sm text-text-muted">House Rent Allowance (HRA)</span> <span class="text-sm font-medium text-text-main">₹ 25,000.00</span></div>
+                                <div class="flex justify-between"><span class="text-sm text-text-muted">Special Allowance</span> <span class="text-sm font-medium text-text-main">₹ 20,000.00</span></div>
+                                <div class="flex justify-between pt-2 border-t border-border mt-2"><span class="text-sm font-bold text-text-main">Total Earnings (Monthly)</span> <span class="text-sm font-bold text-success">₹ 95,000.00</span></div>
+                            </div>
+                        </div>
+                        <div class="border border-border rounded-xl p-5">
+                            <h3 class="font-bold text-text-main border-b border-border pb-2 mb-4">Deductions</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between"><span class="text-sm text-text-muted">Provident Fund (PF)</span> <span class="text-sm font-medium text-danger">₹ 1,800.00</span></div>
+                                <div class="flex justify-between"><span class="text-sm text-text-muted">Professional Tax</span> <span class="text-sm font-medium text-danger">₹ 200.00</span></div>
+                                <div class="flex justify-between"><span class="text-sm text-text-muted">TDS / Income Tax</span> <span class="text-sm font-medium text-danger">₹ 8,500.00</span></div>
+                                <div class="flex justify-between pt-2 border-t border-border mt-2"><span class="text-sm font-bold text-text-main">Total Deductions</span> <span class="text-sm font-bold text-danger">₹ 10,500.00</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div id="addEmployeeModal" class="fixed inset-0 bg-text-main/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-surface rounded-xl shadow-2xl w-full max-w-2xl border border-border transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="addEmployeeModalContent">
+            <div class="flex justify-between items-center p-5 border-b border-border shrink-0 bg-slate-50 rounded-t-xl">
+                <h3 class="font-bold text-lg text-text-main">Add New Employee</h3>
+                <button onclick="closeModal('addEmployeeModal')" class="text-text-muted hover:text-text-main p-1"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Official Email <span class="text-danger">*</span></label>
+                        <input type="email" id="newEmpEmail" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="john@company.com">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Mobile Number</label>
+                        <input type="tel" id="newEmpMobile" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="+91 9876543210">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" id="newEmpName" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="e.g. John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Gender</label>
+                        <select id="newEmpGender" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Company</label>
+                        <select id="newEmpCompany" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                            <option value="Odoo India">Odoo India</option>
+                            <option value="HRMS Global">HRMS Global</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Location</label>
+                        <input type="text" id="newEmpLocation" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="e.g. Mumbai">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Department</label>
+                        <input type="text" id="newEmpDept" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="e.g. Engineering">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Designation</label>
+                        <input type="text" id="newEmpRole" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="e.g. SDE II">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Reporting Manager</label>
+                        <input type="text" id="newEmpManager" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="e.g. Manager Name">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Date of Joining <span class="text-danger">*</span></label>
+                        <input type="date" id="newEmpDOJ" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-text-muted uppercase mb-1">Employment Type</label>
+                        <select id="newEmpType" class="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                            <option value="Full-Time">Full-Time</option>
+                            <option value="Part-Time">Part-Time</option>
+                            <option value="Contract">Contract</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="p-5 border-t border-border flex justify-end gap-3 bg-slate-50 rounded-b-xl shrink-0">
+                <button onclick="closeModal('addEmployeeModal')" class="px-4 py-2 rounded-lg text-sm font-medium text-text-muted hover:bg-slate-200 transition-colors">Cancel</button>
+                <button id="btn-save-employee" onclick="submitNewEmployee()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors flex items-center gap-2">Save Employee</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credentials Modal -->
+    <div id="credentialsModal" class="fixed inset-0 bg-text-main/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-surface rounded-xl shadow-2xl w-full max-w-sm border border-border transform scale-95 transition-transform duration-300 text-center" id="credentialsModalContent">
+            <div class="p-6">
+                <div class="w-16 h-16 bg-success.bg text-success rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined text-[32px]">check_circle</span>
+                </div>
+                <h3 class="font-bold text-xl text-text-main mb-2">Employee Created!</h3>
+                <p class="text-sm text-text-muted mb-6">Please share these credentials with the employee securely.</p>
+                
+                <div class="space-y-3 text-left">
+                    <div class="bg-slate-50 p-3 rounded border border-border flex justify-between items-center group">
+                        <div>
+                            <p class="text-xs font-semibold text-text-muted uppercase">Employee ID</p>
+                            <p id="credID" class="font-mono text-sm font-bold text-text-main mt-0.5">--</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded border border-border flex justify-between items-center group">
+                        <div>
+                            <p class="text-xs font-semibold text-text-muted uppercase">Temporary Password</p>
+                            <p id="credPass" class="font-mono text-sm font-bold text-text-main mt-0.5">--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-border bg-slate-50 rounded-b-xl">
+                <button onclick="closeModal('credentialsModal')" class="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getDatabase, ref, get, child, set, update, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        // IMPORTANT: ADD YOUR REAL FIREBASE CONFIG HERE OR IT WILL FAIL
+        const firebaseConfig = {
+  apiKey: "AIzaSyBC9VhbfPtSgxb-EsPR-BZFcoHmTQUZSdA",
+  authDomain: "hrms-e48e9.firebaseapp.com",
+  databaseURL: "https://hrms-e48e9-default-rtdb.firebaseio.com",
+  projectId: "hrms-e48e9",
+  storageBucket: "hrms-e48e9.firebasestorage.app",
+  messagingSenderId: "271673833727",
+  appId: "1:271673833727:web:55f73e1ff925cfcc9034ca",
+  measurementId: "G-BL4R6ES7X3"
+};
+
+        let app, auth, database;
+        let secondaryApp, secondaryAuth;
+        let currentUserData = null;
+
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const colorClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning' : 'bg-primary';
+            const icon = type === 'success' ? 'check_circle' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info';
+            
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white ${colorClass} transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<span class="material-symbols-outlined text-[20px]">${icon}</span> ${message}`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        try {
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                database = getDatabase(app);
+                
+                secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+                secondaryAuth = getAuth(secondaryApp);
+            } else {
+                console.warn("FIREBASE NOT CONFIGURED: Using dummy config strings.");
+            }
+        } catch (error) {
+            console.error(error);
+            showToast("Firebase Config is invalid.", "warning");
+        }
+
+        // Authentication Flow
+        if(auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    get(child(ref(database), `users/${user.uid}`)).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            currentUserData = snapshot.val();
+                            if(currentUserData.role !== 'admin' && !localStorage.getItem("hrms_master")) {
+                                showToast("Access Denied. Admins only.", "error");
+                                setTimeout(() => window.location.href = 'auth.html', 1500);
+                                return;
+                            }
+                            updateProfileUI(currentUserData);
+                            fetchDashboardData();
+                        } else {
+                            // Failsafe if user exists in Auth but not DB
+                            updateProfileUI({fullName: user.email, role: "Unknown"});
+                            fetchDashboardData();
+                        }
+                    }).catch(err => {
+                        console.error("Database Auth Fetch Error:", err);
+                        renderDatabaseError("Cannot verify user role. " + err.message);
+                    });
+                } else {
+                    if(!localStorage.getItem("hrms_master")) {
+                        window.location.href = 'auth.html';
+                    } else {
+                        // Master bypass used! (Database might block read access)
+                        updateProfileUI({fullName: "Master Admin", email: "admin@local", role: "admin"});
+                        fetchDashboardData();
+                    }
+                }
+            });
+        } else {
+            // No firebase configured at all, try bypass if possible
+            if(localStorage.getItem("hrms_master")) {
+                updateProfileUI({fullName: "Master Admin", email: "admin@local", role: "admin"});
+                fetchDashboardData();
+            } else {
+                window.location.href = 'auth.html';
+            }
+        }
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            if(auth) {
+                signOut(auth).then(() => {
+                    localStorage.clear();
+                    window.location.href = 'auth.html';
+                });
+            } else {
+                localStorage.clear();
+                window.location.href = 'auth.html';
+            }
+        });
+
+        function updateProfileUI(data) {
+            const name = data.fullName || 'Admin User';
+            const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+            
+            const headerName = document.getElementById('header-name');
+            const headerAvatar = document.getElementById('header-avatar');
+            const headerEmail = document.getElementById('header-email');
+            
+            if(headerName) headerName.innerText = name;
+            if(headerAvatar) headerAvatar.innerText = initials;
+            if(headerEmail) headerEmail.innerText = data.email || '';
+        }
+
+        function renderDatabaseError(errorMsg) {
+            const dangerHTML = `<tr><td colspan="4" class="py-6 px-4 text-center border border-danger/20 rounded bg-danger.bg">
+                <p class="text-sm text-danger font-bold mb-1">Database Error: ${errorMsg}</p>
+                <p class="text-xs text-danger/80 font-medium">Firebase Security Rules are blocking access (Usually because you are using the bypass without being truly logged in).</p>
+            </td></tr>`;
+            
+            document.getElementById('employee-table-body').innerHTML = dangerHTML;
+            document.getElementById('attendance-table-body').innerHTML = dangerHTML;
+            document.getElementById('dashboard-leave-tbody').innerHTML = dangerHTML.replace('colspan="4"', 'colspan="3"');
+            document.getElementById('timeoff-table-body').innerHTML = dangerHTML;
+            document.getElementById('activity-timeline').innerHTML = `<p class="text-sm text-danger font-bold">Failed to load: ${errorMsg}</p>`;
+        }
+
+        function fetchDashboardData() {
+            if(!database) {
+                const html = `<tr><td colspan="4" class="py-6 text-center text-sm text-danger font-bold">Firebase credentials missing in code! Please add your config.</td></tr>`;
+                document.getElementById('employee-table-body').innerHTML = html;
+                document.getElementById('attendance-table-body').innerHTML = html;
+                return;
+            }
+
+            // Fallback timeout in case connection fails silently
+            const dbTimeout = setTimeout(() => {
+                const empTbody = document.getElementById('employee-table-body');
+                if (empTbody.innerHTML.includes('Loading directory...')) {
+                    renderDatabaseError("Connection to database timed out or was blocked.");
+                }
+            }, 8000);
+
+            // Fetch Employees
+            onValue(ref(database, 'users'), (snapshot) => {
+                clearTimeout(dbTimeout);
+                const empTbody = document.getElementById('employee-table-body');
+                empTbody.innerHTML = '';
+                let empCount = 0;
+
+                if(snapshot.exists()){
+                    snapshot.forEach((childSnapshot) => {
+                        const emp = childSnapshot.val();
+                        const uid = childSnapshot.key;
+                        if(emp.role === 'employee') {
+                            empCount++;
+                            const initials = (emp.fullName || 'XX').split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                            
+                            // ADDED cursor-pointer and onclick to open Employee Profile
+                            empTbody.innerHTML += `
+                                <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="viewEmployeeProfile('${uid}')">
+                                    <td class="py-3 px-5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 border border-border">${initials}</div>
+                                            <p class="text-sm font-medium text-text-main">${emp.fullName}</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-5 text-sm text-text-muted font-mono">${emp.employeeId || '-'}</td>
+                                    <td class="py-3 px-5 text-sm text-text-main">${emp.department || '-'}</td>
+                                    <td class="py-3 px-5 text-sm text-text-muted">${emp.designation || '-'}</td>
+                                </tr>
+                            `;
+                        }
+                    });
+                }
+                
+                if(empCount === 0) empTbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-sm text-text-muted">No employees found.</td></tr>`;
+                document.getElementById('kpi-total-emp').innerText = empCount;
+            }, (error) => {
+                clearTimeout(dbTimeout);
+                console.error("Firebase Read Error:", error);
+                renderDatabaseError(error.message);
+            });
+
+
+            // Fetch Attendance for Today
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`; 
+            
+            const displayDate = today.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            document.getElementById('attendance-date').innerText = displayDate;
+            
+            onValue(ref(database, `attendance/${dateStr}`), (snapshot) => {
+                const attTbody = document.getElementById('attendance-table-body');
+                attTbody.innerHTML = '';
+                let presentCount = 0;
+
+                if(snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        const att = child.val();
+                        presentCount++;
+                        
+                        const inTime = att.checkIn ? new Date(att.checkIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
+                        const outTime = att.checkOut ? new Date(att.checkOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-';
+                        const statusClass = att.checkOut ? 'text-text-muted' : 'text-success';
+                        const statusText = att.checkOut ? 'Completed' : 'Active';
+
+                        attTbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 border-b border-border last:border-0">
+                                <td class="py-3 px-5 font-medium text-sm text-text-main">${att.userName || 'Unknown'}</td>
+                                <td class="py-3 px-5 text-sm text-text-muted font-mono">${inTime}</td>
+                                <td class="py-3 px-5 text-sm text-text-muted font-mono">${outTime}</td>
+                                <td class="py-3 px-5 text-sm font-bold ${statusClass}">${statusText}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                if(presentCount === 0) attTbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-sm text-text-muted">No attendance recorded today.</td></tr>`;
+                document.getElementById('kpi-present').innerText = presentCount;
+            }, (error) => {});
+
+
+            // Fetch Leave Requests
+            onValue(ref(database, 'leaves'), (snapshot) => {
+                const dashTbody = document.getElementById('dashboard-leave-tbody');
+                const timeTbody = document.getElementById('timeoff-table-body');
+                const timeline = document.getElementById('activity-timeline');
+                
+                dashTbody.innerHTML = ''; timeTbody.innerHTML = ''; timeline.innerHTML = '';
+                let pendingCount = 0;
+
+                if(snapshot.exists()) {
+                    const leavesArray = [];
+                    snapshot.forEach(child => leavesArray.push({ id: child.key, ...child.val() }));
+                    
+                    leavesArray.sort((a,b) => b.timestamp - a.timestamp);
+
+                    leavesArray.forEach(leave => {
+                        const dateText = new Date(leave.timestamp).toLocaleDateString();
+                        const actColor = leave.status === 'Pending' ? 'bg-warning' : leave.status === 'Approved' ? 'bg-success' : 'bg-danger';
+                        timeline.innerHTML += `
+                            <div class="relative pl-5">
+                                <span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full ${actColor} ring-4 ring-surface"></span>
+                                <p class="text-sm text-text-main font-medium">${leave.userName} requested ${leave.type}</p>
+                                <p class="text-xs text-text-muted mt-0.5">${leave.status} • ${dateText}</p>
+                            </div>
+                        `;
+
+                        if(leave.status === 'Pending') {
+                            pendingCount++;
+                            const initials = (leave.userName || 'XX').split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                            
+                            dashTbody.innerHTML += `
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="py-3 px-5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">${initials}</div>
+                                            <div><p class="text-sm font-medium text-text-main">${leave.userName}</p></div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-5">
+                                        <p class="text-sm font-medium text-text-main">${leave.type}</p>
+                                        <p class="text-xs text-text-muted">${leave.fromDate} to ${leave.toDate}</p>
+                                    </td>
+                                    <td class="py-3 px-5 text-right">
+                                        <button onclick="handleLeaveStatus('${leave.id}', 'Rejected')" class="p-1.5 text-danger hover:bg-danger.bg rounded"><span class="material-symbols-outlined text-[18px]">close</span></button>
+                                        <button onclick="handleLeaveStatus('${leave.id}', 'Approved')" class="p-1.5 text-success hover:bg-success.bg rounded"><span class="material-symbols-outlined text-[18px]">check</span></button>
+                                    </td>
+                                </tr>
+                            `;
+
+                            timeTbody.innerHTML += `
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="py-3 px-5 font-medium text-sm text-text-main">${leave.userName}</td>
+                                    <td class="py-3 px-5"><span class="px-2.5 py-1 bg-slate-100 rounded border border-border text-xs font-medium text-text-main">${leave.type}</span></td>
+                                    <td class="py-3 px-5 text-sm text-text-muted">${leave.fromDate} to ${leave.toDate}</td>
+                                    <td class="py-3 px-5 text-right">
+                                        <button onclick="handleLeaveStatus('${leave.id}', 'Rejected')" class="px-3 py-1.5 text-xs font-semibold text-danger border border-danger hover:bg-danger.bg rounded mr-2 transition-colors">Reject</button>
+                                        <button onclick="handleLeaveStatus('${leave.id}', 'Approved')" class="px-3 py-1.5 text-xs font-semibold bg-primary text-white hover:bg-primary-hover rounded transition-colors">Approve</button>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    });
+                }
+                
+                if(pendingCount === 0) {
+                    const emptyMsg = `<tr><td colspan="4" class="py-6 text-center text-sm text-text-muted">No pending leave requests.</td></tr>`;
+                    dashTbody.innerHTML = emptyMsg.replace('colspan="4"', 'colspan="3"');
+                    timeTbody.innerHTML = emptyMsg;
+                }
+                if(timeline.innerHTML === '') timeline.innerHTML = '<p class="text-sm text-text-muted">No recent activities.</p>';
+
+                document.getElementById('kpi-leaves').innerText = String(pendingCount).padStart(2, '0');
+                const sidebarPill = document.getElementById('sidebar-leave-count');
+                if(pendingCount > 0) {
+                    sidebarPill.innerText = pendingCount;
+                    sidebarPill.classList.remove('hidden');
+                } else {
+                    sidebarPill.classList.add('hidden');
+                }
+            }, (error) => {});
+        }
+
+        // NEW: Open Employee Profile Modal and Fetch Specific Data
+        window.viewEmployeeProfile = function(uid) {
+            if(!database) {
+                showToast("Firebase connection required to fetch profile.", "warning");
+                return;
+            }
+
+            openModal('employeeProfileModal');
+            document.getElementById('emp-profile-name').innerText = 'Loading...';
+
+            get(child(ref(database), `users/${uid}`)).then((snapshot) => {
+                if(snapshot.exists()) {
+                    const data = snapshot.val();
+                    
+                    const initials = (data.fullName || 'XX').split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                    document.getElementById('emp-profile-avatar').innerText = initials;
+                    document.getElementById('emp-profile-name').innerText = data.fullName || 'N/A';
+                    document.getElementById('emp-profile-id').innerText = data.employeeId || 'N/A';
+                    document.getElementById('emp-profile-email').innerText = data.email || 'N/A';
+                    document.getElementById('emp-profile-mobile').innerText = data.mobile || 'N/A';
+                    
+                    document.getElementById('emp-profile-company').innerText = data.company || 'N/A';
+                    document.getElementById('emp-profile-dept').innerText = data.department || 'N/A';
+                    document.getElementById('emp-profile-manager').innerText = data.reportingManager || 'N/A';
+                    document.getElementById('emp-profile-location').innerText = data.location || 'N/A';
+
+                    // Update Private Info
+                    document.getElementById('emp-private-doj').innerText = data.dateOfJoining || 'N/A';
+                    document.getElementById('emp-private-gender').innerText = data.gender || 'N/A';
+                    document.getElementById('emp-private-type').innerText = data.employmentType || 'N/A';
+
+                    // Reset Tabs to Resume
+                    switchProfileTab('resume');
+                } else {
+                    showToast("Profile data not found.", "error");
+                    closeModal('employeeProfileModal');
+                }
+            }).catch((error) => {
+                showToast("Failed to retrieve profile: " + error.message, "error");
+                closeModal('employeeProfileModal');
+            });
+        };
+
+        // NEW: Switch tabs inside Profile Modal
+        window.switchProfileTab = function(tabId) {
+            // Hide all contents
+            ['resume', 'private', 'salary'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`btn-tab-${t}`).classList.remove('border-primary', 'text-primary');
+                document.getElementById(`btn-tab-${t}`).classList.add('border-transparent', 'text-text-muted');
+            });
+            
+            // Show active
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`btn-tab-${tabId}`).classList.remove('border-transparent', 'text-text-muted');
+            document.getElementById(`btn-tab-${tabId}`).classList.add('border-primary', 'text-primary');
+        };
+
+        window.handleLeaveStatus = function(leaveId, newStatus) {
+            if(!database) return;
+            update(ref(database, `leaves/${leaveId}`), { status: newStatus })
+                .then(() => {
+                    showToast(`Leave ${newStatus.toLowerCase()} successfully`, newStatus === 'Approved' ? 'success' : 'warning');
+                })
+                .catch((err) => showToast("Error updating leave: " + err.message, "error"));
+        };
+
+        function generateEmployeeID(fullName, doj, company) {
+            const prefix = company === 'Odoo India' ? 'OI' : 'HG';
+            const names = fullName.trim().split(' ');
+            let initials = 'XX';
+            if(names.length >= 2) {
+                initials = (names[0][0] + names[names.length-1][0]).toUpperCase();
+            } else if (names.length === 1 && names[0].length >= 2) {
+                initials = names[0].substring(0, 2).toUpperCase();
+            }
+            const year = doj ? new Date(doj).getFullYear().toString() : new Date().getFullYear().toString();
+            const serial = Math.floor(1000 + Math.random() * 9000).toString(); 
+            return `${prefix}${initials}${year}${serial}`;
+        }
+
+        function generateRandomPassword() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            let pass = "";
+            for (let i = 0; i < 10; i++) { pass += chars.charAt(Math.floor(Math.random() * chars.length)); }
+            return pass;
+        }
+
+        window.submitNewEmployee = function() {
+            const btn = document.getElementById('btn-save-employee');
+            const ogText = btn.innerHTML;
+
+            const name = document.getElementById('newEmpName').value;
+            const email = document.getElementById('newEmpEmail').value;
+            const company = document.getElementById('newEmpCompany').value;
+            const doj = document.getElementById('newEmpDOJ').value;
+            const dept = document.getElementById('newEmpDept').value;
+            const role = document.getElementById('newEmpRole').value;
+            const mobile = document.getElementById('newEmpMobile').value;
+            const gender = document.getElementById('newEmpGender').value;
+            const location = document.getElementById('newEmpLocation').value;
+            const manager = document.getElementById('newEmpManager').value;
+            const empType = document.getElementById('newEmpType').value;
+
+            if(!name || !email || !doj) {
+                showToast("Name, Email and DOJ are required fields.", "error");
+                return;
+            }
+
+            if(!secondaryAuth) {
+                showToast("Firebase Auth error. Ensure config is placed correctly.", "error");
+                return;
+            }
+
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[18px]">sync</span> Saving...`;
+            btn.disabled = true;
+
+            const empId = generateEmployeeID(name, doj, company);
+            const tempPass = generateRandomPassword();
+
+            createUserWithEmailAndPassword(secondaryAuth, email, tempPass)
+                .then((userCredential) => {
+                    const uid = userCredential.user.uid;
+                    
+                    return set(ref(database, `users/${uid}`), {
+                        fullName: name,
+                        email: email,
+                        company: company,
+                        department: dept,
+                        designation: role,
+                        employeeId: empId,
+                        dateOfJoining: doj,
+                        mobile: mobile,
+                        gender: gender,
+                        location: location,
+                        reportingManager: manager,
+                        employmentType: empType,
+                        role: "employee",
+                        createdAt: new Date().toISOString()
+                    });
+                })
+                .then(() => {
+                    signOut(secondaryAuth);
+                    closeModal('addEmployeeModal');
+                    
+                    document.getElementById('credID').innerText = empId;
+                    document.getElementById('credPass').innerText = tempPass;
+                    openModal('credentialsModal');
+                    
+                    document.querySelectorAll('#addEmployeeModalContent input').forEach(el => el.value = '');
+                    showToast("Employee created successfully", "success");
+                })
+                .catch((error) => {
+                    showToast(error.message, "error");
+                })
+                .finally(() => {
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
+                });
+        };
+
+        window.generatePayroll = function() {
+            showToast('Initializing Payroll Engine...', 'info');
+            setTimeout(() => {
+                showToast('Calculating deductions and taxes...', 'info');
+                setTimeout(() => {
+                    showToast('Payroll Generated Successfully', 'success');
+                    switchView('payroll');
+                }, 1500);
+            }, 1000);
+        };
+
+        window.switchView = function(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            const targetView = document.getElementById(viewId + '-view');
+            if(targetView) targetView.classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('bg-primary-light', 'text-primary', 'font-medium');
+                el.classList.add('text-text-muted');
+                if(el.dataset.view === viewId) {
+                    el.classList.add('bg-primary-light', 'text-primary', 'font-medium');
+                    el.classList.remove('text-text-muted');
+                }
+            });
+            if(window.innerWidth < 1024) toggleSidebar();
+        }
+
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        window.toggleDropdown = function(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        window.openModal = function(id) {
+            const modal = document.getElementById(id);
+            const content = document.getElementById(id + 'Content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        window.closeModal = function(id) {
+            const modal = document.getElementById(id);
+            const content = document.getElementById(id + 'Content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        document.querySelectorAll('.nav-accordion').forEach(acc => {
+            acc.addEventListener('click', function() {
+                const submenu = this.nextElementSibling;
+                const chevron = this.querySelector('.chevron');
+                submenu.classList.toggle('open');
+                chevron.classList.toggle('open');
+            });
+        });
+
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.relative')) {
+                document.querySelectorAll('.shadow-dropdown').forEach(d => d.classList.add('hidden'));
+            }
+        });
+    </script>
+</body>
+</html>

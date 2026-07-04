@@ -218,6 +218,42 @@
                     </div>
                 </div>
 
+                <!-- FORCE PASSWORD CHANGE VIEW (FIRST LOGIN) -->
+                <div id="view-force-password" class="view-section w-full">
+                    <div class="text-center md:text-left mb-8">
+                        <div class="w-16 h-16 bg-blue-100 text-primary rounded-xl flex items-center justify-center mb-5 shadow-inner ring-4 ring-blue-50">
+                            <span class="material-symbols-outlined text-[32px]">lock_reset</span>
+                        </div>
+                        <h2 class="text-3xl font-bold text-slate-900">First Login</h2>
+                        <p class="text-slate-500 mt-2 text-sm">For security reasons, please change your auto-generated temporary password before continuing.</p>
+                    </div>
+
+                    <form id="forcePwdForm" onsubmit="handleForcePwdChange(event)" class="space-y-5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">New Password</label>
+                            <div class="input-group">
+                                <span class="material-symbols-outlined input-icon">lock</span>
+                                <input type="password" id="newPwd" required class="form-input pr-10" placeholder="Enter new password" minlength="6" />
+                                <span class="material-symbols-outlined toggle-password" onclick="togglePassword('newPwd', this)">visibility</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="material-symbols-outlined input-icon">lock_clock</span>
+                                <input type="password" id="confirmPwd" required class="form-input pr-10" placeholder="Confirm new password" minlength="6" />
+                                <span class="material-symbols-outlined toggle-password" onclick="togglePassword('confirmPwd', this)">visibility</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnChangePwd" class="w-full bg-primary hover:bg-blue-900 text-white py-3.5 rounded-xl font-semibold shadow-lg transition-all flex justify-center items-center gap-2 mt-4 transform active:scale-[0.98]">
+                            <span id="changePwdBtnText">Update Password & Continue</span>
+                            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+                        </button>
+                    </form>
+                </div>
+
                 <!-- REGISTER VIEW -->
                 <div id="view-register" class="view-section w-full">
                     <div class="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 items-start">
@@ -277,16 +313,12 @@
                                 </div>
 
                                 <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Company</label>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Company Name</label>
                                     <div class="input-group">
                                         <span class="material-symbols-outlined input-icon">domain</span>
-                                        <select id="regCompany" required class="form-input appearance-none">
-                                            <option value="Odoo India">Odoo India</option>
-                                            <option value="HRMS Global">HRMS Global</option>
-                                        </select>
+                                        <input type="text" id="regCompany" required class="form-input" placeholder="e.g. HRMS Global" />
                                     </div>
                                 </div>
-
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Location</label>
                                     <div class="input-group">
@@ -302,7 +334,6 @@
                                         <input type="text" id="regDept" required class="form-input" placeholder="e.g. Engineering" />
                                     </div>
                                 </div>
-
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Designation</label>
                                     <div class="input-group">
@@ -318,7 +349,6 @@
                                         <input type="text" id="regManager" required class="form-input" placeholder="Manager Name" />
                                     </div>
                                 </div>
-
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Date of Joining</label>
                                     <div class="input-group">
@@ -339,11 +369,19 @@
                                     </div>
                                 </div>
 
+                                <!-- Custom Asset Uploads -->
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Profile Photo</label>
                                     <div class="input-group">
-                                        <span class="material-symbols-outlined input-icon">image</span>
+                                        <span class="material-symbols-outlined input-icon">face</span>
                                         <input type="file" id="regPhoto" accept="image/*" class="form-input !py-1.5 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+                                    </div>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Company Logo (Branding)</label>
+                                    <div class="input-group">
+                                        <span class="material-symbols-outlined input-icon">storefront</span>
+                                        <input type="file" id="regLogo" accept="image/*" class="form-input !py-1.5 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
                                     </div>
                                 </div>
 
@@ -366,31 +404,44 @@
                         <span class="material-symbols-outlined text-[40px]">check_circle</span>
                     </div>
                     
-                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Employee Created Successfully</h3>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Employee Created!</h3>
                     <p class="text-slate-500 mb-8 max-w-sm mx-auto text-sm leading-relaxed">
-                        The employee can login using the generated credentials and will be required to change the password during their first login.
+                        The employee can login using their Official Email and this temporary password. They will be forced to change it on their first login.
                     </p>
                     
                     <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 text-left mb-8 w-full shadow-sm relative overflow-hidden">
                         <!-- Decorative bg -->
                         <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full mix-blend-multiply filter blur-2xl opacity-50 -mr-10 -mt-10"></div>
                         
-                        <div class="mb-5 relative z-10">
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">badge</span> Generated Login ID</label>
-                            <div class="flex items-center justify-between mt-1.5 bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm group">
-                                <span id="successID" class="font-mono text-lg font-bold text-slate-800 tracking-wide">OIJODO20260001</span>
-                                <button type="button" onclick="copyText('successID')" class="text-slate-400 hover:text-secondary bg-slate-50 hover:bg-blue-50 p-1.5 rounded-md transition-colors" title="Copy ID">
-                                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
-                                </button>
+                        <div class="space-y-4 relative z-10">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">badge</span> Employee ID</label>
+                                <div class="flex items-center justify-between mt-1.5 bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm group">
+                                    <span id="successEmpID" class="font-mono text-lg font-bold text-slate-800 tracking-wide">--</span>
+                                    <button type="button" onclick="copyText('successEmpID')" class="text-slate-400 hover:text-secondary bg-slate-50 hover:bg-blue-50 p-1.5 rounded-md transition-colors" title="Copy ID">
+                                        <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="relative z-10">
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">key</span> Temporary Password</label>
-                            <div class="flex items-center justify-between mt-1.5 bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm group">
-                                <span id="successPass" class="font-mono text-lg font-bold text-slate-800 tracking-wide">HRMS@5839</span>
-                                <button type="button" onclick="copyText('successPass')" class="text-slate-400 hover:text-secondary bg-slate-50 hover:bg-blue-50 p-1.5 rounded-md transition-colors" title="Copy Password">
-                                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
-                                </button>
+
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">account_circle</span> Login ID</label>
+                                <div class="flex items-center justify-between mt-1.5 bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm group">
+                                    <span id="successLoginID" class="font-mono text-lg font-bold text-slate-800 tracking-wide">--</span>
+                                    <button type="button" onclick="copyText('successLoginID')" class="text-slate-400 hover:text-secondary bg-slate-50 hover:bg-blue-50 p-1.5 rounded-md transition-colors" title="Copy Login ID">
+                                        <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">key</span> Temporary Password</label>
+                                <div class="flex items-center justify-between mt-1.5 bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm group">
+                                    <span id="successPass" class="font-mono text-lg font-bold text-slate-800 tracking-wide">--</span>
+                                    <button type="button" onclick="copyText('successPass')" class="text-slate-400 hover:text-secondary bg-slate-50 hover:bg-blue-50 p-1.5 rounded-md transition-colors" title="Copy Password">
+                                        <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -411,19 +462,20 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-        // IMPORTANT: ADD YOUR FIREBASE CONFIG HERE
+        // IMPORTANT: ADD YOUR REAL FIREBASE CONFIG HERE
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL", 
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+  apiKey: "AIzaSyBC9VhbfPtSgxb-EsPR-BZFcoHmTQUZSdA",
+  authDomain: "hrms-e48e9.firebaseapp.com",
+  databaseURL: "https://hrms-e48e9-default-rtdb.firebaseio.com",
+  projectId: "hrms-e48e9",
+  storageBucket: "hrms-e48e9.firebasestorage.app",
+  messagingSenderId: "271673833727",
+  appId: "1:271673833727:web:55f73e1ff925cfcc9034ca",
+  measurementId: "G-BL4R6ES7X3"
+};
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -467,7 +519,10 @@
             viewRegister.classList.remove('active');
             viewSuccess.classList.remove('active');
             
-            if(view !== 'success') {
+            const viewForcePwd = document.getElementById('view-force-password');
+            if(viewForcePwd) viewForcePwd.classList.remove('active');
+            
+            if(view === 'login' || view === 'register') {
                 tabsContainer.style.display = 'inline-flex';
                 if(view === 'login') {
                     tabLogin.className = "px-5 py-2 text-sm font-semibold rounded-md transition-all bg-white text-primary shadow-sm";
@@ -484,6 +539,7 @@
                 if(view === 'login') viewLogin.classList.add('active');
                 if(view === 'register') viewRegister.classList.add('active');
                 if(view === 'success') viewSuccess.classList.add('active');
+                if(view === 'force-password' && viewForcePwd) viewForcePwd.classList.add('active');
             }, 50);
         }
 
@@ -498,8 +554,14 @@
             }
         }
 
-        function generateEmployeeID(fullName, doj, company) {
-            const prefix = company === 'Odoo India' ? 'OI' : 'HG';
+        // Generate clean EMP00045 style ID
+        function generateEmpID() {
+            return `EMP${String(Math.floor(1 + Math.random() * 99999)).padStart(5, '0')}`;
+        }
+
+        // Generate Login ID Based on Company and Name (e.g. OIJODO20260001)
+        function generateLoginID(fullName, doj, company) {
+            const prefix = company.substring(0,2).toUpperCase(); 
             const names = fullName.trim().split(' ');
             let initials = 'XX';
             
@@ -510,16 +572,19 @@
             }
 
             const year = doj ? new Date(doj).getFullYear().toString() : new Date().getFullYear().toString();
-            const serial = Math.floor(1000 + Math.random() * 9000).toString(); 
+            const serial = String(Math.floor(1 + Math.random() * 9999)).padStart(4, '0'); 
             
             return `${prefix}${initials}${year}${serial}`;
         }
 
+        // Generate Secure Temporary Password (e.g. HRMS@5839)
         function generateRandomPassword() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-            let pass = "";
-            for (let i = 0; i < 10; i++) {
-                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            const nums = "0123456789";
+            const special = "@#$*";
+            let pass = "HRMS";
+            pass += special.charAt(Math.floor(Math.random() * special.length));
+            for (let i = 0; i < 4; i++) {
+                pass += nums.charAt(Math.floor(Math.random() * nums.length));
             }
             return pass;
         }
@@ -531,6 +596,23 @@
             });
         }
 
+        // Complete Login Logic 
+        function completeLogin(userData) {
+            localStorage.setItem("hrms_session", Date.now().toString());
+            localStorage.setItem("hrms_role", userData.role);
+            
+            showToast(`Login successful. Welcome ${userData.fullName}!`, "success");
+            
+            setTimeout(() => {
+                // IMPORTANT: UPDATE THESE URLS TO YOUR DASHBOARD PAGES
+                if(userData.role === 'admin') {
+                    window.location.href = 'admin.html'; 
+                } else {
+                    window.location.href = 'employee.html';
+                }
+            }, 1500);
+        }
+
         window.handleLogin = function(e) {
             e.preventDefault();
             const btnText = document.getElementById('loginBtnText');
@@ -540,6 +622,18 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
+            // Master Bypass (Dev Use Only)
+            const MASTER_EMAIL = "durgesh@hrmsglobal.com";
+            const MASTER_PASSWORD = "Kumar@123";
+            if (email === MASTER_EMAIL && password === MASTER_PASSWORD) {
+                localStorage.setItem("hrms_session", Date.now().toString());
+                localStorage.setItem("hrms_role", "admin");
+                localStorage.setItem("hrms_master", "true");
+                showToast("Login successful. Welcome Durgesh!", "success");
+                setTimeout(() => window.location.href = 'admin.html', 800);
+                return;
+            }
+
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
@@ -548,19 +642,16 @@
                     get(child(dbRef, `users/${user.uid}`)).then((snapshot) => {
                         if (snapshot.exists()) {
                             const userData = snapshot.val();
-                            localStorage.setItem("hrms_session", Date.now().toString());
-                            localStorage.setItem("hrms_role", userData.role);
-                            
-                            showToast(`Login successful. Welcome ${userData.fullName}!`, "success");
-                            
-                            setTimeout(() => {
-                                // IMPORTANT: UPDATE THESE URLS TO YOUR DASHBOARD PAGES
-                                if(userData.role === 'admin') {
-                                    window.location.href = 'admin-dashboard.html'; 
-                                } else {
-                                    window.location.href = 'employee-dashboard.html';
-                                }
-                            }, 1500);
+
+                            // Force password change on first login check
+                            if (userData.forcePasswordChange) {
+                                window.currentUserForPwdChange = user;
+                                window.currentDataForPwdChange = userData;
+                                switchView('force-password');
+                                btnText.innerText = originalText;
+                            } else {
+                                completeLogin(userData);
+                            }
 
                         } else {
                             btnText.innerText = originalText;
@@ -576,6 +667,37 @@
                     btnText.innerText = originalText;
                     showToast(error.message, "error");
                 });
+        }
+
+        window.handleForcePwdChange = function(e) {
+            e.preventDefault();
+            const pwd1 = document.getElementById('newPwd').value;
+            const pwd2 = document.getElementById('confirmPwd').value;
+
+            if (pwd1 !== pwd2) {
+                showToast("Passwords do not match!", "error");
+                return;
+            }
+
+            const btnText = document.getElementById('changePwdBtnText');
+            const ogText = btnText.innerText;
+            btnText.innerHTML = `<span class="material-symbols-outlined spinner text-[20px]">sync</span> Updating...`;
+
+            // Update Firebase Auth password
+            updatePassword(window.currentUserForPwdChange, pwd1).then(() => {
+                // Remove the force flag from realtime database
+                return update(ref(database, 'users/' + window.currentUserForPwdChange.uid), {
+                    forcePasswordChange: false
+                });
+            }).then(() => {
+                showToast("Password updated successfully! Logging you in...", "success");
+                setTimeout(() => {
+                    completeLogin(window.currentDataForPwdChange);
+                }, 1000);
+            }).catch((error) => {
+                btnText.innerText = ogText;
+                showToast(error.message, "error");
+            });
         }
 
         window.handleRegister = function(e) {
@@ -596,8 +718,10 @@
             const empType = document.getElementById('regType').value;
             const email = document.getElementById('regEmail').value; 
 
-            const generatedID = generateEmployeeID(name, doj, company);
-            const generatedPass = generateRandomPassword();
+            // Auto-Generations
+            const generatedEmpID = generateEmpID(); 
+            const generatedLoginID = generateLoginID(name, doj, company); 
+            const generatedPass = generateRandomPassword(); 
 
             createUserWithEmailAndPassword(auth, email, generatedPass)
                 .then((userCredential) => {
@@ -605,7 +729,8 @@
                     
                     set(ref(database, 'users/' + user.uid), {
                         fullName: name,
-                        employeeId: generatedID,
+                        employeeId: generatedEmpID,
+                        loginId: generatedLoginID,
                         email: email,
                         mobile: mobile,
                         gender: gender,
@@ -617,10 +742,12 @@
                         dateOfJoining: doj,
                         employmentType: empType,
                         role: "employee", 
+                        forcePasswordChange: true, // FLAG TRIPPED FOR FIRST LOGIN
                         createdAt: new Date().toISOString()
                     }).then(() => {
                         btnText.innerText = originalText;
-                        document.getElementById('successID').innerText = generatedID;
+                        document.getElementById('successEmpID').innerText = generatedEmpID;
+                        document.getElementById('successLoginID').innerText = generatedLoginID;
                         document.getElementById('successPass').innerText = generatedPass;
                         switchView('success');
                         showToast("Employee account created securely.", "success");
@@ -644,11 +771,10 @@
                 if (diff < THIRTY_DAYS_MS) {
                     showToast("Valid session found. Redirecting...", "info");
                     setTimeout(() => {
-                         // IMPORTANT: UPDATE THESE URLS TO YOUR DASHBOARD PAGES
                         if(role === 'admin') {
-                            window.location.href = 'admin-dashboard.html'; 
+                            window.location.href = 'admin.html'; 
                         } else {
-                            window.location.href = 'employee-dashboard.html';
+                            window.location.href = 'employee.html';
                         }
                     }, 1000);
                 } else {
